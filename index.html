@@ -1,0 +1,42 @@
+
+<script id="rectangle-vertex-shader" type="x-shader/x-vertex">
+  attribute vec2 a_position;
+
+  uniform mat4 u_projection;
+  uniform mat4 u_view;
+  uniform mat4 u_model;
+  
+  void main() {
+    gl_Position = u_projection*u_view*u_model*vec4(a_position, 0.0, 1.0);
+  }
+</script>
+<!-- fragment shader -->
+<script id="rectangle-fragment-shader" type="x-shader/x-fragment">
+  precision mediump float;
+
+  uniform float     u_red;
+  uniform float     u_green;
+  uniform float     u_blue;
+  uniform float     u_alpha;
+
+  void main() {
+    gl_FragColor = vec4( u_red, u_green, u_blue, 1.0 ) * u_alpha;
+  }
+</script>
+
+
+<script type="text/javascript" src="glUtils.js"></script>
+<script type="text/javascript" src="glMatrix.js"></script>
+<script type="text/javascript" src="app.js"></script>
+<script type="text/javascript" src="sys.js"></script>
+<script type="text/javascript" src="animator.js"></script>
+<script type="text/javascript" src="rectangle.js"></script>
+<script type="text/javascript" src="quad.js"></script>
+<script type="text/javascript" src="object.js"></script>
+<script type="text/javascript" src="main.js"></script>
+
+<body onload="start()">
+  <canvas id="glcanvas" width="480" height="852">
+    Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+  </canvas>
+</body>
