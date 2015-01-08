@@ -55,7 +55,7 @@ function initWebGL(canvas) {
 }
 
 function render() {
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clearColor(0.0, 0.0, 0.0, 0.0);
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   gl.disable(gl.DEPTH_TEST);
 
@@ -83,7 +83,8 @@ function start() {
     //console.log( mat4.str( testrectangle.viewMatrix ) );
     //console.log( mat4.str( testrectangle.projectionMatrix ) );
 
-    var intervalId = setInterval(render, 100);
+    var intervalId = setInterval(render, 1000/60);
+    //var intervalId = setInterval(render,1000/1)
     //render();
   }
 }

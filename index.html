@@ -24,18 +24,49 @@
   }
 </script>
 
+<script id="image-vertex-shader" type="x-shader/x-vertex">
+  attribute vec2 a_position;
+  attribute vec2 a_tex_coordinate;
+  
+  uniform mat4 u_projection;
+  uniform mat4 u_view;
+  uniform mat4 u_model;
+  
+  varying vec2 v_tex_coord;
+  
+  void main() {
+    gl_Position = u_projection*u_view*u_model*vec4(a_position, 0.0, 1.0);
+    v_tex_coord = a_tex_coordinate;
+  }
+</script>
+<!-- fragment shader -->
+<script id="image-fragment-shader" type="x-shader/x-fragment">
+  precision mediump float;
+
+  varying vec2      v_tex_coord;
+
+  uniform sampler2D u_texture;
+  uniform float     u_alpha;
+
+  void main() {
+    vec4 color = texture2D(u_texture, v_tex_coord);
+    gl_FragColor = color * u_alpha;
+  }
+</script>
 
 <script type="text/javascript" src="glUtils.js"></script>
 <script type="text/javascript" src="glMatrix.js"></script>
+<script type="text/javascript" src="fps.js"></script>
 <script type="text/javascript" src="app.js"></script>
 <script type="text/javascript" src="sys.js"></script>
 <script type="text/javascript" src="animator.js"></script>
 <script type="text/javascript" src="rectangle.js"></script>
+<script type="text/javascript" src="image.js"></script>
 <script type="text/javascript" src="quad.js"></script>
 <script type="text/javascript" src="object.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
-<body onload="start()">
+<body onload="start()" background="mainSplash.jpg">
   <canvas id="glcanvas" width="480" height="852">
     Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
   </canvas>

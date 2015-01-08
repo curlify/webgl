@@ -21,6 +21,7 @@ var object = function(ident,width,height) {
     add : function(child) {
       child.parent = this;
       this.children.push( child )
+      return child
     },
 
     updateModelMatrix : function() {
