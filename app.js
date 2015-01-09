@@ -7,7 +7,7 @@ var app = function() {
 
     var instance = new object ("application")
 
-    for (var i=1; i <= 50; i++) {
+    for (var i=1; i <= 75; i++) {
         new function() {
         var rect = instance.add( new rectangle(50,50,{red: Math.random(), green: Math.random(), blue:Math.random()}) )
         rect.identifier = "rectangle "+i
@@ -26,7 +26,27 @@ var app = function() {
         }()
     }
 
-    instance.add( new image("adCanvas-logo.png") )
+    var rect = instance.add( new rectangle(100,100) )
+    rect.position.x = screenWidth/2
+    
+    var logo2 = rect.add( new image("adCanvas-logo.png") )
+    logo2.onload = function() {
+        logo2.position.x = -logo2.size.width/2
+        console.log(logo2.position.x,logo2.size.width)
+    }
+    
+    var logo = instance.add( new image("adCanvas-logo.png") )
+    logo.onload = function() {
+        console.log(logo.size.width)
+        logo.position.x = -screenWidth/2 + logo.size.width/2
+    }
+    logo.relativePress = function(x,y){
+        console.log("press",x,y)
+    }
+    logo.relativeDrag = function(x,y){
+        console.log("drag : ",x,y)
+    }
+    //var icon = instance.add( new image("icon.png") )
 
     instance.step = function() {
         fps.updateFps()

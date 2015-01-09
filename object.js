@@ -8,6 +8,7 @@ var object = function(ident,width,height) {
     scale : {x:1, y:1, z:1},
     size : {width:(width == null ? screenWidth : width), height:(height == null ? screenHeight : height)},
     children : [],
+    active : true,
 
     projectionMatrix : camera.projectionMatrix,
     viewMatrix : camera.viewMatrix,
@@ -69,9 +70,112 @@ var object = function(ident,width,height) {
 
     },
 
+    press : function(x,y) {
+
+      var used = false
+      if (this.relativePress != null) {
+        var relx = (x-screenWidth/2)-this.absolutex()
+        var rely = (y-screenHeight/2)-this.absolutey()
+        used = this.relativePress(relx,rely)
+      }
+      if (this.absolutePress != null) used = this.absolutePress(x,y)
+
+      for (var i=this.children.length-1; i >= 0; i--) {
+        if (this.children[i].active) used = this.children[i].press(x,y)
+      }
+      
+      return used
+    },
+
+    drag : function(x,y) {
+
+      var used = false
+      if (this.relativeDrag != null) {
+        var relx = (x-screenWidth/2)-this.absolutex()
+        var rely = (y-screenHeight/2)-this.absolutey()
+        used = this.relativeDrag(relx,rely)
+      }
+      if (this.absoluteDrag != null ) used = this.absoluteDrag(x,y)
+      
+      for (var i=this.children.length-1; i >= 0; i--) {
+        if (this.children[i].active) used = this.children[i].drag(x,y)
+      }
+      
+      return used
+    },
+
+    release : function(x,y) {
+
+      var used = false
+      if (this.relativeRelease != null) {
+        var relx = (x-screenWidth/2)-this.absolutex()
+        var rely = (y-screenHeight/2)-this.absolutey()
+        used = this.relativeRelease(relx,rely)
+      }
+      if (this.absoluteRelease != null) used = this.absoluteRelease(x,y)
+      
+      for (var i=this.children.length-1; i >= 0; i--) {
+        if (this.children[i].active) used = this.children[i].release(x,y)
+      }
+      
+      return used
+    },
+
+    // x position within parent
+    x : function() {
+      return this.position.x
+    },
+
+    // y position within parent
+    y : function() {
+      return this.position.y
+    },
+
+    // width
+    width : function() {
+      return this.size.width*this.scale.x
+    },
+
+    // height
+    height : function() {
+      return this.size.height*this.scale.y
+    },
+
+    // top
+    top : function() {
+      return this.position.y-this.height()/2
+    },
+
+    // bottom
+    bottom : function() {
+      return this.position.y+this.height()/2
+    },
+
+    // left
+    left : function() {
+      return this.position.x-this.width()/2
+    },
+
+    // right
+    right : function() {
+      return this.position.x+this.width()/2
+    },
+
+    absolutex : function() {
+      var parentx = 0
+      if (this.parent != null) parentx = this.parent.absolutex()
+      return parentx+this.x()
+    },
+
+    absolutey : function() {
+      var parenty = 0
+      if (this.parent != null) parenty = this.parent.absolutey()
+      return parenty+this.y()
+    },
+
     absolutealpha : function() {
       return 1;
-    }
+    },
   }
 
 };

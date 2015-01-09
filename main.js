@@ -5,8 +5,8 @@ var screenWidth = null;
 var screenHeight = null;
 
 var camera = null;
-
 var scenestack = [];
+var touch = false;
 
 function assert(condition, message) {
     if (!condition) {
@@ -54,6 +54,34 @@ function initWebGL(canvas) {
   return gl;
 }
 
+function mousedown(e) {
+  //console.log("mousedown : "+e.clientX+","+e.clientY)
+  touch = true
+  var target = scenestack[0]
+  target.press(e.clientX,e.clientY)
+  target.drag(e.clientX,e.clientY)
+}
+
+function mouseup(e) {
+  //console.log("mouseup : "+e.clientX+","+e.clientY)
+  touch = false
+  var target = scenestack[0]
+  target.release(e.clientX,e.clientY)
+}
+
+function mouseout(e) {
+  //console.log("mouseout : "+e.clientX+","+e.clientY)
+  if (touch) mouseup(e)
+}
+
+function mousemove(e) {
+  //console.log("mousemove : "+e.clientX+","+e.clientY)
+  var target = scenestack[0]
+  if (touch) {
+    target.drag(e.clientX,e.clientY)
+  }
+}
+
 function render() {
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
@@ -61,7 +89,8 @@ function render() {
 
   gl.viewport(0, 0, screenWidth, screenHeight)
 
-  scenestack[0].draw();
+  var target = scenestack[0]
+  target.draw();
 }
 
 function start() {
