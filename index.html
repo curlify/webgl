@@ -1,3 +1,18 @@
+<html> 
+  <head>
+    <style>
+      body, html { 
+        width: 100%;
+        height: 100%;
+        border: 0px;
+        padding: 0px;
+        margin: 0px;
+      }
+      #glcanvas {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
 
 <script id="rectangle-vertex-shader" type="x-shader/x-vertex">
   attribute vec2 a_position;
@@ -54,20 +69,63 @@
   }
 </script>
 
+<script id="mirrorimage-vertex-shader" type="x-shader/x-vertex">
+  attribute vec2 a_position;
+  attribute vec2 a_tex_coordinate;
+  
+  uniform mat4 u_projection;
+  uniform mat4 u_view;
+  uniform mat4 u_model;
+  
+  varying vec2 v_tex_coord;
+  
+  void main() {
+    gl_Position = u_projection*u_view*u_model*vec4(a_position, 0.0, 1.0);
+    v_tex_coord = a_tex_coordinate;
+  }
+</script>
+<!-- fragment shader -->
+<script id="mirrorimage-fragment-shader" type="x-shader/x-fragment">
+  precision mediump float;
+
+  varying vec2      v_tex_coord;
+
+  uniform sampler2D u_texture;
+  uniform float     u_alpha;
+
+  void main() {
+
+    float offset = 1.0 - v_tex_coord.y*2.0;
+    float alpha = u_alpha * offset;
+    
+    vec4 color = texture2D(u_texture, vec2(v_tex_coord.x,1.0-v_tex_coord.y));
+    
+    gl_FragColor = color * alpha;
+  }
+</script>
+
 <script type="text/javascript" src="glUtils.js"></script>
 <script type="text/javascript" src="glMatrix.js"></script>
 <script type="text/javascript" src="fps.js"></script>
 <script type="text/javascript" src="app.js"></script>
 <script type="text/javascript" src="sys.js"></script>
 <script type="text/javascript" src="animator.js"></script>
+<script type="text/javascript" src="focusable.js"></script>
+<script type="text/javascript" src="cmsloader.js"></script>
+<script type="text/javascript" src="carousel.js"></script>
 <script type="text/javascript" src="rectangle.js"></script>
+<script type="text/javascript" src="mirrorimage.js"></script>
 <script type="text/javascript" src="image.js"></script>
 <script type="text/javascript" src="quad.js"></script>
 <script type="text/javascript" src="object.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
-<body onload="start()" background="http://curlify.com/videos/mainSplash.jpg">
-  <canvas onmousedown="mousedown(event)" onmouseup="mouseup(event)" onmousemove="mousemove(event)" onmouseout="mouseout(event)" id="glcanvas" width="480" height="480">
+  </head>
+
+<body onload="start()" background="bg.jpg">
+  <canvas onmousedown="mousedown(event)" onmouseup="mouseup(event)" onmousemove="mousemove(event)" onmouseout="mouseout(event)" id="glcanvas">
     Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
   </canvas>
 </body>
+
+</html>

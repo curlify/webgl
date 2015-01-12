@@ -1,5 +1,6 @@
 
 var gl; // A global variable for the WebGL context
+var canvas;
 
 var screenWidth = null;
 var screenHeight = null;
@@ -86,6 +87,8 @@ function render() {
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   gl.disable(gl.DEPTH_TEST);
+  gl.enable(gl.CULL_FACE)
+  gl.cullFace(gl.FRONT);
 
   gl.viewport(0, 0, screenWidth, screenHeight)
 
@@ -93,16 +96,30 @@ function render() {
   target.draw();
 }
 
-function start() {
-  var canvas = document.getElementById("glcanvas");
+function resizeCanvas() {
+   // only change the size of the canvas if the size it's being displayed
+   // has changed.
+   var width = canvas.clientWidth;
+   var height = canvas.clientHeight;
+   if (canvas.width != width ||
+       canvas.height != height) {
+     // Change the size of the canvas to match the size it's being displayed
+     canvas.width = width;
+     canvas.height = height;
+   }
+   screenWidth = canvas.width;
+   screenHeight = canvas.height;
+   console.log("resizeCanvas",screenWidth,screenHeight)
+}
 
-  screenWidth = canvas.width;
-  screenHeight = canvas.height;
+function start() {
+  canvas = document.getElementById("glcanvas");
+  gl = initWebGL(canvas);      // Initialize the GL context
+  
+  resizeCanvas()
 
   camera = createProjectionAndView(screenWidth,screenHeight,3,100);
 
-  gl = initWebGL(canvas);      // Initialize the GL context
-  
   // Only continue if WebGL is available and working
   
   if (gl) {

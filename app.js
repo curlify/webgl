@@ -7,46 +7,43 @@ var app = function() {
 
     var instance = new object ("application")
 
-    for (var i=1; i <= 75; i++) {
-        new function() {
-        var rect = instance.add( new rectangle(50,50,{red: Math.random(), green: Math.random(), blue:Math.random()}) )
-        rect.identifier = "rectangle "+i
-        rect.position.x=getRandom(-screenWidth/2, screenWidth/2)
-        rect.position.y=getRandom(-screenHeight/2, screenHeight/2)
-        
-        rect.spin = function() {
-            rect.rotate.z = 0
-            rect.anim.animate( rect.rotate, {z:Math.PI*2, time:getRandom(1000,2000), onComplete:
-                function() {
-                    rect.spin()
-                }
-            })
-        }
-        rect.spin()
-        }()
-    }
+    var w=screenWidth*0.5
+    var h=screenHeight*0.5
+    var content = instance.add( new carousel("content") )
+    content.wrap = true
+    content.itemsize = screenWidth/2
+    content.inertia = 5
+    //content.swipespeed = screenWidth/8
+    content.movethreshold = 0
 
-    var rect = instance.add( new rectangle(100,100) )
-    rect.position.x = screenWidth/2
-    
-    var logo2 = rect.add( new image("adCanvas-logo.png") )
-    logo2.onload = function() {
-        logo2.position.x = -logo2.size.width/2
-        console.log(logo2.position.x,logo2.size.width)
+    instance.cmsloader = cmsloader.new()
+    instance.cmsloader.onload = function(json) {
+      console.log("cmsloader.onload")
+
+      //content.add(image.new("ff"))
+      for (var i = json.length - 1; i >= 0; i--) {
+        console.log(json[i].splash)
+
+        var carouselobject = content.add( object.new("carousel object") )
+
+        var splash = carouselobject.add( image.new(json[i].splash) )
+        splash.onload = function() {
+          this.size.width = w
+          this.size.height = h
+        }
+
+        var mirror = carouselobject.add( mirrorimage.new(json[i].splash) )
+        mirror.onload = function() {
+          this.size.width = w
+          this.size.height = h
+          this.position.y = splash.height()/2+30
+        }
+        mirror.alpha = 0.75
+        
+
+      };
     }
-    
-    var logo = instance.add( new image("adCanvas-logo.png") )
-    logo.onload = function() {
-        console.log(logo.size.width)
-        logo.position.x = -screenWidth/2 + logo.size.width/2
-    }
-    logo.relativePress = function(x,y){
-        console.log("press",x,y)
-    }
-    logo.relativeDrag = function(x,y){
-        console.log("drag : ",x,y)
-    }
-    //var icon = instance.add( new image("icon.png") )
+    instance.cmsloader.updatefeed()
 
     instance.step = function() {
         fps.updateFps()

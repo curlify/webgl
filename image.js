@@ -32,9 +32,11 @@ var image = function(source) {
   }
 
   image.image = new Image();
-  //image.image.crossOrigin = '';
+  image.image.crossOrigin = '';
   image.image.src = source;
   image.image.onload = function() {
+
+    if (image.image == null) return
     image.texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, image.texture);
 
@@ -58,7 +60,7 @@ var image = function(source) {
   image.render = function() {
 
     if (image.loaded != true) {
-      console.log("texture not loaded")
+      //console.log("texture not loaded")
       return
     }
 
@@ -91,5 +93,9 @@ var image = function(source) {
   };
 
   return image;
+}
+
+image.new = function(source) {
+  return new image(source)
 }
 

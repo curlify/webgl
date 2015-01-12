@@ -229,3 +229,8 @@ animator.outElastic = function(initial, final, pos) {
   return initial + (final - initial) * (math.pow(2, -10*pos) * math.sin((pos - 0.0777777) * 6 * math.pi) + 1)
 }
 
+
+animator.new = function() {
+  return new animator()
+}
+

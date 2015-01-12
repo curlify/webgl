@@ -10,9 +10,9 @@ var quad = function(ident,width,height) {
       var translateScale = screenWidth/(this.translateScale*2)
       mat4.translate(modelMatrix,vec3.create([this.position.x/translateScale,-this.position.y/translateScale,this.position.z/translateScale]) );
     }
-    if (this.rotate.z != 0) mat4.rotateZ(modelMatrix,this.rotate.z);
-    if (this.rotate.y != 0) mat4.rotateY(modelMatrix,this.rotate.y);
-    if (this.rotate.x != 0) mat4.rotateX(modelMatrix,this.rotate.x);
+    if (this.rotate.z != 0) mat4.rotateZ(modelMatrix,-this.rotate.z);
+    if (this.rotate.y != 0) mat4.rotateY(modelMatrix,-this.rotate.y);
+    if (this.rotate.x != 0) mat4.rotateX(modelMatrix,-this.rotate.x);
     if (this.scale.x != 1 || this.scale.y != 1 || this.scale.z != 1) mat4.scale(modelMatrix,vec3.create([this.scale.x,this.scale.y,this.scale.z]));
 
     this.modelMatrix = modelMatrix;
@@ -24,3 +24,7 @@ var quad = function(ident,width,height) {
 
   return quad;
 };
+
+quad.new = function(ident,width,height) {
+  return new quad(ident,width,height)
+}

@@ -9,6 +9,8 @@ var object = function(ident,width,height) {
     size : {width:(width == null ? screenWidth : width), height:(height == null ? screenHeight : height)},
     children : [],
     active : true,
+    visible : true,
+    alpha : 1,
 
     projectionMatrix : camera.projectionMatrix,
     viewMatrix : camera.viewMatrix,
@@ -18,6 +20,7 @@ var object = function(ident,width,height) {
     identityMatrix : mat4.identity( mat4.create() ),
 
     anim : new animator(),
+    lastdraw : 0,
 
     add : function(child) {
       child.parent = this;
@@ -32,9 +35,9 @@ var object = function(ident,width,height) {
         var translateScale = screenWidth/(this.translateScale*2)
         mat4.translate(modelMatrix,vec3.create([this.position.x/translateScale,-this.position.y/translateScale,this.position.z/translateScale]) );
       }
-      if (this.rotate.z != 0) mat4.rotateZ(modelMatrix,this.rotate.z);
-      if (this.rotate.y != 0) mat4.rotateY(modelMatrix,this.rotate.y);
-      if (this.rotate.x != 0) mat4.rotateX(modelMatrix,this.rotate.x);
+      if (this.rotate.z != 0) mat4.rotateZ(modelMatrix,-this.rotate.z);
+      if (this.rotate.y != 0) mat4.rotateY(modelMatrix,-this.rotate.y);
+      if (this.rotate.x != 0) mat4.rotateX(modelMatrix,-this.rotate.x);
       if (this.scale.x != 1 || this.scale.y != 1 || this.scale.z != 1) mat4.scale(modelMatrix,vec3.create([this.scale.x,this.scale.y,this.scale.z]));
 
       this.modelMatrix = modelMatrix;
@@ -60,13 +63,19 @@ var object = function(ident,width,height) {
     draw : function() {
       //console.log("draw : "+this.identifier+" children : "+this.children.length)
 
-      if (this.step != null) this.step();
+      var timedelta = Math.min(sys.timestamp()-this.lastdraw,60)
+      this.lastdraw = sys.timestamp()
+      if (this.step != null) this.step(timedelta);
       this.anim.step();
+
+      if (this.visible == false) return
+
       this.update();
       if (this.render != null) this.render();
       for (var i = 0; i < this.children.length; i++) {
         this.children[i].draw();
       };
+      if (this.postRender != null) this.postRender();
 
     },
 
@@ -174,8 +183,16 @@ var object = function(ident,width,height) {
     },
 
     absolutealpha : function() {
-      return 1;
+      var parenta = 1.0
+      if (this.parent != null) parenta = this.parent.absolutealpha()
+      return parenta*this.alpha
     },
   }
 
 };
+
+object.new = function(ident,width,height) {
+  return new object(ident,width,height)
+}
+
+
