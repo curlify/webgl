@@ -75,7 +75,9 @@ var animator = function() {
       //remove dead animations
       for (i = dead.length-1; i >= 0; i--) {
         var completeFunc = this.animations[dead[i]].config.onComplete
-        delete this.animations[dead[i]]
+        //delete this.animations[dead[i]]
+        this.animations.splice(dead[i],1)
+        //console.log("animations.length",this.animations.length)
         if (completeFunc != null) {
           completeFunc()
         }

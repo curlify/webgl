@@ -6,10 +6,14 @@ var carousel = function(ident,width,height) {
   var coverflow = { name:"coverflow", show:[], hide:[] }
   coverflow.show.push( {target:'position.x',startposition:screenWidth*1.0,endposition:0,func:animator.linear} )
   coverflow.show.push( {target:'rotate.y',startposition:Math.PI*0.8,endposition:0,func:animator.linear} )
-  coverflow.show.push( {target:'alpha',startposition:-0.5,endposition:1,func:animator.linear} )
+  coverflow.show.push( {target:'scale.x',startposition:0.6,endposition:1,func:animator.linear} )
+  coverflow.show.push( {target:'scale.y',startposition:0.6,endposition:1,func:animator.linear} )
+  //coverflow.show.push( {target:'alpha',startposition:0.3,endposition:1,func:animator.linear} )
   coverflow.hide.push( {target:'position.x',startposition:0,endposition:-screenWidth*1.0,func:animator.linear} )
   coverflow.hide.push( {target:'rotate.y',startposition:0,endposition:-Math.PI*0.8,func:animator.linear} )
-  coverflow.hide.push( {target:'alpha',startposition:1,endposition:-0.5,func:animator.linear} )
+  coverflow.hide.push( {target:'scale.x',startposition:1,endposition:0.6,func:animator.linear} )
+  coverflow.hide.push( {target:'scale.y',startposition:1,endposition:0.6,func:animator.linear} )
+  //coverflow.hide.push( {target:'alpha',startposition:1,endposition:0.3,func:animator.linear} )
 
   container.contentsize = {width:container.size.width, height:container.size.height}
   container.inertia = 5
@@ -28,6 +32,7 @@ var carousel = function(ident,width,height) {
 
   var instance = container.add( new object("carousel") )
   instance.targetposition = {x:0, y:0, z:0}
+  instance.pressOffset = {x:0,y:0}
 
   var itemcontainer = container.add( new object("item container") )
   itemcontainer.targetposition = {x:0, y:0, z:0}
@@ -36,6 +41,7 @@ var carousel = function(ident,width,height) {
   container.itemcontainer = itemcontainer
 
   var move = function(source,target,timedelta) {
+    //console.log("move",source,target,timedelta)
     if (timedelta > 100) timedelta = 100
     var dir = 1
     if (source > target) dir = -1
@@ -46,30 +52,35 @@ var carousel = function(ident,width,height) {
     return source
   }
 
-  instance.setMoving = function() {
-    if (/*scene:getpointerStealer() == nil and */container.nevermove != true) {
-      //scene:stealPointers( container )
+  instance.setMoving = function(diffx,diffy) {
+    if (scene.getpointerStealer() == null && container.nevermove != true) {
+      //console.log("setMoving()",diffx,diffy,container.movethreshold)
+      scene.stealPointers( container )
+      if (container.stolePointers != null) container.stolePointers(diffx,diffy)
       instance.moving = true
     }
   }
 
   container.focus = function(x,y) {
-    console.log("focus carousel",container.identifier)
+    //console.log("focus carousel",container.identifier,instance.moving)
     if (instance.moving) {
       instance.moving = false
       instance.targetposition.x=instance.position.x
       instance.targetposition.y=instance.position.y
     }
     instance.pressOffset = {x:instance.targetposition.x-(x*container.movespeed)/screenWidth*2,y:instance.targetposition.y-y*container.movespeed}
+    container.pressStarted = {x:x,y:y}
+        
   }
 
   container.focusdrag = function(x,y) {
     var newx = instance.pressOffset.x+(x*container.movespeed)/screenWidth*2
-    var newy = instance.pressOffset.y+y*container.movespeed
-    var diffx = newx-instance.targetposition.x
-    var diffy = newy-instance.targetposition.y
+    var newy = instance.pressOffset.y+(y*container.movespeed)/screenHeight*2
+    var diffx = container.pressStarted.x-x
+    var diffy = container.pressStarted.y-y
 
-    if ((container.alwaysmove || container.contentsize.width != container.size.width) && Math.abs(diffx) > container.movethreshold/screenWidth) instance.setMoving()
+    //console.log("focusdrag",container.identifier,diffx,container.movethreshold/screenWidth,instance.moving)
+    if ((container.alwaysmove || container.contentsize.width != container.size.width) && Math.abs(diffx) > container.movethreshold) instance.setMoving(diffx,diffy)
 
     if (instance.moving) {
       instance.targetposition.x = newx
@@ -79,6 +90,7 @@ var carousel = function(ident,width,height) {
 
   container.defocus = function(x,y) {
     var selitem = Math.floor(-instance.targetposition.x+0.5)
+    //console.log("container.defocus",x,y,selitem)
     if (container.moveToSelectedItem) {
       instance.targetposition.x = -selitem
     }
@@ -89,7 +101,7 @@ var carousel = function(ident,width,height) {
     if (container.carouselmoved != null) container.carouselmoved(container.selecteditem)
   }
   
-  container.postRender = function() {
+  container.postDraw = function() {
     if (container.wrap) {
       for (var i=0;i <itemcontainer.children.length;i++) {
         var item = itemcontainer.children[i]
@@ -97,15 +109,32 @@ var carousel = function(ident,width,height) {
         var originalvisible = item.visible
         var originalitemposition = item.itemposition
         item.itemposition = originalitemposition + itemcontainer.children.length
-        item.draw()
+        item.stepTree()
+        item.drawTree()
         item.itemposition = originalitemposition - itemcontainer.children.length
-        item.draw()
+        item.stepTree()
+        item.drawTree()
         item.itemposition = originalitemposition
         item.step(0)
         item.visible = originalvisible
         item.active = originalactive
       }
     }
+  }
+
+  container.selected = function() {
+    return container.selecteditem
+  }
+
+  container.getItem = function(index) {
+    return itemcontainer.children[index-1]
+  }
+
+  container.moveto = function(item,instant) {
+    instance.targetposition.x = -item
+    if (instant) instance.position.x = instance.targetposition.x
+    container.selecteditem = item
+    if (container.carouselmoved != null) container.carouselmoved(item)
   }
 
   container.step = function(timedelta) {
@@ -161,6 +190,15 @@ var carousel = function(ident,width,height) {
     }
   }
 
+  container.getDistance = function() {
+    var dist = (instance.position.x*container.itemsize+(this.itemposition*container.itemsize)) / screenWidth
+    return dist
+  }
+
+  container.setContentSize = function() {
+    container.contentsize.width = container.itemsize * itemcontainer.children.length
+  }
+
   // add children to itemcontainer, not container
   container.add = function(child,indx) {
 
@@ -171,12 +209,16 @@ var carousel = function(ident,width,height) {
     carouselobject.parent = itemcontainer
     itemcontainer.children.push( carouselobject )
 
+    child.carouselobject = carouselobject
+
     carouselobject.index = indx
     carouselobject.child = child
     carouselobject.itemposition = indx
 
+    carouselobject.getDistance = container.getDistance
+
     carouselobject.step = function(timedelta) {
-      var dist = (instance.position.x*container.itemsize+(this.itemposition*container.itemsize)) / screenWidth
+      var dist = this.getDistance()
 
       if (dist <= -container.unload_distance || dist >= container.unload_distance) {
         if (this.unload_content != null && this.content != null) this.unload_content()
@@ -208,6 +250,7 @@ var carousel = function(ident,width,height) {
           else if (show.target == 'rotate.y') this.rotate.y = show.func( show.startposition, show.endposition, Math.abs(1.0-dist) )
           else if (show.target == 'rotate.z') this.rotate.z = show.func( show.startposition, show.endposition, Math.abs(1.0-dist) )
           else if (show.target == 'alpha') this.alpha = show.func( show.startposition, show.endposition, Math.abs(1.0-dist) )
+          else if (show.target == 'transition_value') this.transition_value = show.func( show.startposition, show.endposition, Math.abs(1.0-dist) )
         }
       } else {
         for (var i=0;i<trans.hide.length;i++) {
@@ -221,15 +264,17 @@ var carousel = function(ident,width,height) {
           else if (hide.target == 'rotate.y') this.rotate.y = hide.func( hide.startposition, hide.endposition, Math.abs(dist) )
           else if (hide.target == 'rotate.z') this.rotate.z = hide.func( hide.startposition, hide.endposition, Math.abs(dist) )
           else if (hide.target == 'alpha') this.alpha = hide.func( hide.startposition, hide.endposition, Math.abs(dist) )
+          else if (hide.target == 'transition_value') this.transition_value = hide.func( hide.startposition, hide.endposition, Math.abs(dist) )
         }
       }
 
     }
 
     itemcontainer.itemaddposition = itemcontainer.itemaddposition + 1
-    container.contentsize.width = container.itemsize * itemcontainer.children.length
 
-    return child
+    container.setContentSize()
+
+    return carouselobject
 
   }
 

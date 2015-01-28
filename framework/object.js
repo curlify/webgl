@@ -11,6 +11,7 @@ var object = function(ident,width,height) {
     active : true,
     visible : true,
     alpha : 1,
+    drawbackside : false,
 
     projectionMatrix : camera.projectionMatrix,
     viewMatrix : camera.viewMatrix,
@@ -20,7 +21,9 @@ var object = function(ident,width,height) {
     identityMatrix : mat4.identity( mat4.create() ),
 
     anim : new animator(),
+    timervalue : 0,
     lastdraw : 0,
+    laststep : 0,
 
     add : function(child) {
       child.parent = this;
@@ -58,24 +61,55 @@ var object = function(ident,width,height) {
         mat4.multiply( this.modelViewMatrix, this.modelMatrix );
       }
 
+      if (this.blend == false) {
+        gl.disable( gl.BLEND )
+      } else {
+        gl.enable( gl.BLEND )
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      }
+
+      if (this.drawbackside == true) {
+        gl.disable(gl.CULL_FACE) 
+      } else {
+        gl.enable(gl.CULL_FACE) 
+      }
+
     },
 
-    draw : function() {
-      //console.log("draw : "+this.identifier+" children : "+this.children.length)
+    stepTree : function() {
+      //console.log("stepTree : "+this.identifier+" children : "+this.children.length)
+      
+      var timedelta = Math.min(sys.timestamp()-this.laststep,60)
+      this.laststep = sys.timestamp()
+
+      this.anim.step()
+
+      if (this.preStep != null) this.preStep()
+      if (this.step != null) this.step(timedelta)
+
+      for (var i = 0; i < this.children.length; i++) {
+        this.children[i].stepTree();
+      };
+
+      if (this.postStep != null) this.postStep()
+      
+    },
+
+    drawTree : function() {
+      //console.log("drawTree : "+this.identifier+" children : "+this.children.length)
 
       var timedelta = Math.min(sys.timestamp()-this.lastdraw,60)
       this.lastdraw = sys.timestamp()
-      if (this.step != null) this.step(timedelta);
-      this.anim.step();
 
       if (this.visible == false) return
 
       this.update();
-      if (this.render != null) this.render();
+      if (this.preDraw != null) this.preDraw();
+      if (this.draw != null) this.draw();
       for (var i = 0; i < this.children.length; i++) {
-        this.children[i].draw();
+        this.children[i].drawTree();
       };
-      if (this.postRender != null) this.postRender();
+      if (this.postDraw != null) this.postDraw();
 
     },
 
@@ -130,6 +164,14 @@ var object = function(ident,width,height) {
       return used
     },
 
+    resetpress : function() {
+      if (this.active != true) return
+      for (var i=this.children.length-1; i>=0;i--) {
+        this.children[i].resetpress()
+      }
+      if (this != scene.getpointerStealer() && this.pointerReset != null) this.pointerReset()
+    },
+
     // x position within parent
     x : function() {
       return this.position.x
@@ -182,11 +224,35 @@ var object = function(ident,width,height) {
       return parenty+this.y()
     },
 
+    absolutescalex : function() {
+      var parentscalex = 1
+      if (this.parent != null) parentscalex = this.parent.absolutescalex()
+      return parentscalex*this.scale.x
+    },
+
+    absolutescaley : function() {
+      var parentscaley = 1
+      if (this.parent != null) parentscaley = this.parent.absolutescaley()
+      return parentscaley*this.scale.y
+    },
+
     absolutealpha : function() {
       var parenta = 1.0
       if (this.parent != null) parenta = this.parent.absolutealpha()
       return parenta*this.alpha
     },
+
+    activate : function() {
+      this.active = true
+      if (this.postActivate != null) this.postActivate()
+    },
+
+    deactivate : function() {
+      this.active = false
+      if (this.postDeactivate != null) this.postDeactivate()
+    },
+
+
   }
 
 };

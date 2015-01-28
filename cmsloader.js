@@ -1,40 +1,10 @@
 
-function getRandom(min, max) {
-  return Math.random() * (max - min) + min;
-}
 
-function createCORSRequest(method, url) {
-  var xhr = new XMLHttpRequest();
-  if ("withCredentials" in xhr) {
-
-    // Check if the XMLHttpRequest object has a "withCredentials" property.
-    // "withCredentials" only exists on XMLHTTPRequest2 objects.
-    xhr.open(method, url, true);
-
-  } else if (typeof XDomainRequest != "undefined") {
-
-    // Otherwise, check if XDomainRequest.
-    // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
-    xhr = new XDomainRequest();
-    xhr.open(method, url);
-
-  } else {
-
-    // Otherwise, CORS is not supported by the browser.
-    xhr = null;
-
-  }
-  return xhr;
-}
-
-
-var cmsloader = function() {
+var cmsloader = function(feeds) {
 
     var instance = new object ("cms loader")
 
-    instance.feeds = []
-    //instance.feeds.push( {url:"http://api.curlify.com/api/dev/app/d5cd526c52888fd2e0c8d88eaf79117f/ads",filename:"vesa2dev.json"} )
-    instance.feeds.push( {url:"server/d5cd526c52888fd2e0c8d88eaf79117f.ads",filename:"vesa2dev.json"} )
+    instance.feeds = feeds
     instance.feed = instance.feeds[0]
 
     instance.updatefeed = function(feed) {
@@ -45,6 +15,7 @@ var cmsloader = function() {
           return
         }
 
+        console.log("updatefeed",feed.url)
         feed.request = createCORSRequest('GET', feed.url);
         if (!feed.request) {
           throw new Error('CORS not supported');
@@ -67,6 +38,6 @@ var cmsloader = function() {
     return instance
 }
 
-cmsloader.new = function() {
-    return new cmsloader()
+cmsloader.new = function(feeds) {
+    return new cmsloader(feeds)
 }

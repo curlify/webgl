@@ -1,7 +1,7 @@
 
-var focusable = function(ident,width,height) {
 
-  var focusable = new quad(ident,width,height);
+var button = function(source) {
+  var focusable = image.new(source)
   focusable.focused = false
 
   focusable.hit = function(x,y) {
@@ -38,8 +38,9 @@ var focusable = function(ident,width,height) {
   }
 
   return focusable;
-};
-
-focusable.new = function(ident,width,height) {
-  return new focusable(ident,width,height)
 }
+
+button.new = function(source) {
+  return new button(source)
+}
+

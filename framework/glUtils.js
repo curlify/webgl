@@ -48,11 +48,15 @@ var loadShader = function(gl, shaderSource, shaderType, opt_errorCallback) {
  * @param {!Array.<string>} opt_attribs The attribs names.
  * @param {!Array.<number>} opt_locations The locations for the attribs.
  */
-var loadProgram = function(gl, shaders, opt_attribs, opt_locations) {
+var loadProgram = function(gl, shaders, opt_attribs, opt_uniforms) {
+
+  var glProgram = {}
+
   var program = gl.createProgram();
   for (var ii = 0; ii < shaders.length; ++ii) {
     gl.attachShader(program, shaders[ii]);
   }
+  /*
   if (opt_attribs) {
     for (var ii = 0; ii < opt_attribs.length; ++ii) {
       gl.bindAttribLocation(
@@ -61,6 +65,7 @@ var loadProgram = function(gl, shaders, opt_attribs, opt_locations) {
           opt_attribs[ii]);
     }
   }
+  */
   gl.linkProgram(program);
 
   // Check the link status
@@ -73,7 +78,25 @@ var loadProgram = function(gl, shaders, opt_attribs, opt_locations) {
       gl.deleteProgram(program);
       return null;
   }
-  return program;
+
+  if (opt_attribs) {
+    for (var ii = 0; ii < opt_attribs.length; ++ii) {
+      var handleName = opt_attribs[ii]+"_handle"
+      //console.log("attrib",handleName)
+      glProgram[handleName] = gl.getAttribLocation(program,opt_attribs[ii])
+    }
+  }
+  if (opt_uniforms) {
+    for (var ii = 0; ii < opt_uniforms.length; ++ii) {
+      var handleName = opt_uniforms[ii]+"_handle"
+      //console.log("uniform",handleName)
+      glProgram[handleName] = gl.getUniformLocation(program,opt_uniforms[ii])
+    }
+  }
+
+  glProgram.program = program
+
+  return glProgram;
 };
 
 /**
@@ -110,3 +133,25 @@ var createShaderFromScript = function(
       gl, shaderSource, opt_shaderType ? opt_shaderType : shaderType,
       opt_errorCallback);
 };
+
+var createShader = function(
+    gl, shaderScript, opt_shaderType, opt_errorCallback) {
+  var shaderType;
+  var shaderSource = shaderScript.text;
+
+  if (!opt_shaderType) {
+    if (shaderScript.type == "x-shader/x-vertex") {
+      shaderType = gl.VERTEX_SHADER;
+    } else if (shaderScript.type == "x-shader/x-fragment") {
+      shaderType = gl.FRAGMENT_SHADER;
+    } else if (shaderType != gl.VERTEX_SHADER && shaderType != gl.FRAGMENT_SHADER) {
+      throw("*** Error: unknown shader type");
+      return null;
+    }
+  }
+
+  return loadShader(
+      gl, shaderSource, opt_shaderType ? opt_shaderType : shaderType,
+      opt_errorCallback);
+};
+
