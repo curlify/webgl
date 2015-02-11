@@ -1,7 +1,8 @@
 
-var carousel = function(ident,width,height) {
+var carousel = {}
+carousel.new = function(ident,width,height) {
 
-  var container = new focusable(ident,width,height);
+  var container = focusable.new(ident,width,height);
 
   var coverflow = { name:"coverflow", show:[], hide:[] }
   coverflow.show.push( {target:'position.x',startposition:screenWidth*1.0,endposition:0,func:animator.linear} )
@@ -30,11 +31,11 @@ var carousel = function(ident,width,height) {
   container.selecteditem = 1
   container.moveToSelectedItem = true
 
-  var instance = container.add( new object("carousel") )
+  var instance = container.add( object.new("carousel") )
   instance.targetposition = {x:0, y:0, z:0}
   instance.pressOffset = {x:0,y:0}
 
-  var itemcontainer = container.add( new object("item container") )
+  var itemcontainer = container.add( object.new("item container") )
   itemcontainer.targetposition = {x:0, y:0, z:0}
 
   container.instance = instance
@@ -95,8 +96,12 @@ var carousel = function(ident,width,height) {
       instance.targetposition.x = -selitem
     }
     container.selecteditem = selitem
-    if (container.selecteditem < 0) container.selecteditem = itemcontainer.children.length+selitem
-    if (container.selecteditem > (itemcontainer.children.length-1)) container.selecteditem = selitem-itemcontainer.children.length
+    if (container.selecteditem < 0) {
+      container.selecteditem = (container.wrap ? itemcontainer.children.length+selitem : 0)
+    }
+    if (container.selecteditem > (itemcontainer.children.length-1)) {
+      container.selecteditem = (container.wrap ? selitem-itemcontainer.children.length : (itemcontainer.children.length-1))
+    }
     container.selecteditem = container.selecteditem + 1
     if (container.carouselmoved != null) container.carouselmoved(container.selecteditem)
   }
@@ -134,7 +139,7 @@ var carousel = function(ident,width,height) {
     instance.targetposition.x = -item
     if (instant) instance.position.x = instance.targetposition.x
     container.selecteditem = item
-    if (container.carouselmoved != null) container.carouselmoved(item)
+    if (container.carouselmoved != null) container.carouselmoved(item+1)
   }
 
   container.step = function(timedelta) {
@@ -204,10 +209,50 @@ var carousel = function(ident,width,height) {
 
     var indx = itemcontainer.children.length
 
-    var carouselobject = new focusable("carousel item container")
+    var carouselobject = focusable.new("carousel item container")
     carouselobject.add( child )
     carouselobject.parent = itemcontainer
     itemcontainer.children.push( carouselobject )
+
+    itemcontainer.drawTree = function() {
+      var timedelta = Math.min(sys.timestamp()-this.lastdraw,60)
+      this.lastdraw = sys.timestamp()
+
+      if (this.visible == false) return
+
+      this.update();
+      if (this.preDraw != null) this.preDraw();
+      if (this.draw != null) this.draw();
+
+      if (container.transition.order_draw) {
+        var drawstack = []
+        for (var i=0;i<this.children.length;i++){
+          drawstack.push(this.children[i])
+        }
+        function compare(a,b) {
+          if (Math.abs(a.dist) > Math.abs(b.dist))
+             return -1;
+          return 1;
+        }
+        drawstack.sort(compare)
+
+        for (var i=0;i<drawstack.length;i++) {
+          drawstack[i].drawTree()
+        }
+      } else {
+        if (this.reverseDrawOrder) {
+          for (var i = this.children.length-1; i >= 0; i--) {
+            this.children[i].drawTree();
+          };
+        } else {
+          for (var i = 0; i < this.children.length; i++) {
+            this.children[i].drawTree();
+          };
+        }
+      }
+
+      if (this.postDraw != null) this.postDraw();      
+    }
 
     child.carouselobject = carouselobject
 
@@ -219,6 +264,7 @@ var carousel = function(ident,width,height) {
 
     carouselobject.step = function(timedelta) {
       var dist = this.getDistance()
+      this.dist = dist
 
       if (dist <= -container.unload_distance || dist >= container.unload_distance) {
         if (this.unload_content != null && this.content != null) this.unload_content()
@@ -238,6 +284,10 @@ var carousel = function(ident,width,height) {
       this.distance = dist
 
       var trans = container.transition
+      if (trans.reverse_draw) 
+        itemcontainer.reverseDrawOrder=true
+      else
+        itemcontainer.reverseDrawOrder=false
       if (dist >= 0) {
         for (var i=0;i<trans.show.length;i++) {
           var show = trans.show[i]
@@ -282,6 +332,3 @@ var carousel = function(ident,width,height) {
 
 };
 
-carousel.new = function(ident,width,height) {
-  return new carousel(ident,width,height)
-}

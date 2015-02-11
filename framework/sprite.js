@@ -5,11 +5,9 @@ sprite.newSheet = function( source,xsize,ysize ) {
 
   var result = {spritewidth:0,spriteheight:0,frames:[]}
 
-  var sheet = image.loadImage(source)
-  sheet.onload = function() {
-
-    var w = sheet.width/xsize
-    var h = sheet.height/ysize
+  if ( source instanceof Array) {
+    var w = xsize
+    var h = ysize
 
     var canvas = document.createElement("canvas");
     canvas.width = w
@@ -17,21 +15,57 @@ sprite.newSheet = function( source,xsize,ysize ) {
     var context = canvas.getContext('2d');
     console.log("sprite.newSheet.onload",typeof(canvas),canvas)
 
-    for (var y=0;y<ysize;y++) {
-      for (var x=0;x<xsize;x++) {
-        context.drawImage(sheet, -x*w, -y*h)
-        result.frames.push( image.new(canvas) )
-        context.clearRect ( 0 , 0 , canvas.width, canvas.height )
+    var loaded = 0
+    for (var i=0;i<source.length;i++) {
+      new function() {
+        var img = image.loadImage(source[i])
+        img.onload = function() {
+          context.drawImage(img,0,0)
+          result.frames.push( image.new(canvas) )
+          context.clearRect ( 0 , 0 , canvas.width, canvas.height )
+          loaded = loaded + 1
+          if (loaded == source.length) {
+            if (result.onload != null) result.onload()
+          }
+        }
       }
     }
 
-    console.log("sprite.newSheet",source,sheet.width,sheet.height,xsize,ysize,result.frames.length)
+    console.log("sprite.newSheet",source,source.length,xsize,ysize,result.frames.length)
     
     result.spritewidth=w
     result.spriteheight=h
-    result.name = source
+    result.name = "array "+source.length
 
-    if (result.onload != null) result.onload()
+  } else {
+    var sheet = image.loadImage(source)
+    sheet.onload = function() {
+
+      var w = sheet.width/xsize
+      var h = sheet.height/ysize
+
+      var canvas = document.createElement("canvas");
+      canvas.width = w
+      canvas.height = h
+      var context = canvas.getContext('2d');
+      console.log("sprite.newSheet.onload",typeof(canvas),canvas)
+
+      for (var y=0;y<ysize;y++) {
+        for (var x=0;x<xsize;x++) {
+          context.drawImage(sheet, -x*w, -y*h)
+          result.frames.push( image.new(canvas) )
+          context.clearRect ( 0 , 0 , canvas.width, canvas.height )
+        }
+      }
+
+      console.log("sprite.newSheet",source,sheet.width,sheet.height,xsize,ysize,result.frames.length)
+      
+      result.spritewidth=w
+      result.spriteheight=h
+      result.name = source
+
+      if (result.onload != null) result.onload()
+    }
   }
 
   return result
@@ -53,16 +87,16 @@ sprite.newFromSheet = function( sheet,loop,limitamount,limitoffsetstart, REPLACE
   
   instance.frame = instance.children[0]
   instance.frametimervalue=0
+  instance.frametime = 35
 
   console.log("newFromSheet",sheet.name,limitoffsetstart,limitamount,instance.children.length)
 
-  var animtime = 35
-  
-  instance.restart = function() {
+  instance.restart = function(instant) {
     instance.frametimervalue=0
     var completefunc = instance.restart
     if (loop == false) completefunc = null
-    instance.anim.animate( instance, {frametimervalue:instance.children.length,time:animtime*instance.children.length,onComplete:completefunc})
+    var delay = (instance.loopdelay && !instant ? instance.loopdelay : 0)
+    instance.anim.animate( instance, {frametimervalue:instance.children.length,start:delay,time:instance.frametime*instance.children.length,onComplete:completefunc})
   }
 
   instance.preStep = function(timedelta) {
@@ -92,7 +126,7 @@ sprite.newFromSheet = function( sheet,loop,limitamount,limitoffsetstart, REPLACE
     instance.anim.stop()
   }
 
-  if (loop != false) instance.restart()
+  if (loop != false) instance.restart(true)
 
   return instance
 }

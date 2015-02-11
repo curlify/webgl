@@ -7,7 +7,7 @@ var carousel_vertical = function(ident,width,height) {
   move_in.hide.push( {target:'position.y',startposition:0,endposition:0,func:animator.linear} )
   move_in.hide.push( {target:'alpha',startposition:1,endposition:0,func:animator.inExpo} )
 
-  var instance = new carousel(ident,width,height);
+  var instance = carousel.new(ident,width,height);
   instance.itemsize = screenHeight
   instance.transition = move_in
 

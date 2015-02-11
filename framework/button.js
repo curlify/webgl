@@ -3,6 +3,7 @@
 var button = function(source) {
   var focusable = image.new(source)
   focusable.focused = false
+  focusable.identifier = "button : "+source
 
   focusable.hit = function(x,y) {
     if (x < -this.width()/2 || x > this.width()/2 || y < -this.height()/2 || y > this.height()/2) return false
@@ -35,6 +36,12 @@ var button = function(source) {
     if (this.defocus != null) this.defocus(x,y)
     this.focused = false
     return true
+  }
+
+  focusable.pointerReset = function() {
+    //console.log("pointerReset",this.identifier)
+    if (this.defocus != null) this.defocus(0,0)
+    this.focused = false
   }
 
   return focusable;

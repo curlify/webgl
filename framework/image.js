@@ -44,7 +44,7 @@ var image_program = {
     var vertexShader = createShader(gl, vertex)
     var fragmentShader = createShader(gl, fragment)
 
-    this.glProgram = loadProgram(gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_alpha","u_model","u_view","u_projection"]);
+    this.glProgram = loadProgram(gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_model","u_view","u_projection"]);
 
   }
 };
@@ -57,12 +57,13 @@ image.loadImage = function(source) {
   // type is file, other option is another image in which case we just refer to that objects texture
   if ( typeof(source) == "string" ) {
 
-    console.log("image.new(",source,")",zip)
-    image = new Image();
+    console.log("image.new(",source,")",curlify.zipfile)
 
-    if (zip != null) {
-      //console.log("image.source zip",zipEntry,source,zip)
-      var zipEntry = zip.file(source)
+    image = curlify.addImageElement()
+
+    if (curlify.zipfile != null) {
+      console.log("image.source zip",zipEntry,source,curlify.zipfile)
+      var zipEntry = curlify.zipfile.file(source)
       image.src = 'data:image/jpg;base64,' + JSZip.base64.encode(zipEntry.asBinary())
     } else {
       console.log("image source file")
@@ -75,14 +76,14 @@ image.loadImage = function(source) {
 
 }
 
-image.new = function(source) {
+image.new = function(source,geometry) {
 
-  var instance = new quad("image : "+source);
+  var instance = (geometry ? geometry : quad.new("image : "+source))
 
   instance.size.width = null
   instance.size.height = null
 
-  instance.glProgram = image_program.getProgram()
+  //instance.glProgram = image_program.getProgram()
 
   if ( source instanceof HTMLElement ) {
 
@@ -163,34 +164,6 @@ image.new = function(source) {
     console.log("ERROR: image.new from unknown object",source)
 
   }
-
-  instance.draw = function() {
-
-    if (instance.loaded != true) {
-      //console.log("texture not loaded",this.identifier)
-      return
-    }
-
-    gl.useProgram(this.glProgram.program);
-
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, instance.texture)
-    gl.uniform1i(this.glProgram.u_texture_handle, 0)
-
-    gl.uniform1f(this.glProgram.u_alpha_handle, this.absolutealpha());
-
-    gl.uniformMatrix4fv(this.glProgram.u_projection_handle, false, this.projectionMatrix);
-    gl.uniformMatrix4fv(this.glProgram.u_view_handle, false, this.viewMatrix);
-    gl.uniformMatrix4fv(this.glProgram.u_model_handle, false, this.quadModelMatrix);
-    
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
-    gl.enableVertexAttribArray(this.glProgram.a_position_handle)
-    gl.enableVertexAttribArray(this.glProgram.a_tex_coordinate_handle)
-
-    gl.vertexAttribPointer(this.glProgram.a_position_handle, quadBuffer.itemSize, gl.FLOAT, false, 16, 0);
-    gl.vertexAttribPointer(this.glProgram.a_tex_coordinate_handle, quadBuffer.itemSize, gl.FLOAT, false, 16, 8);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, quadBuffer.numItems);
-  };
 
   return instance;
 }

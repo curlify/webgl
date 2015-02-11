@@ -42,7 +42,7 @@ var rectangle_program = {
 }
 
 var rectangle = function(width,height,color) {
-  var rectangle = new quad("rectangle",width,height);
+  var rectangle = quad.new("rectangle",width,height);
 
   rectangle.glProgram = rectangle_program.getProgram()
   rectangle.color = (color == null ? {red:0, green:0, blue:0} : color);
@@ -59,11 +59,13 @@ var rectangle = function(width,height,color) {
     gl.uniformMatrix4fv(this.glProgram.u_view_handle, false, this.viewMatrix);
     gl.uniformMatrix4fv(this.glProgram.u_model_handle, false, this.quadModelMatrix);
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+    var buffer = (this.buffer ? this.buffer : quad.buffer)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.enableVertexAttribArray(this.glProgram.a_position_handle)
 
-    gl.vertexAttribPointer(this.glProgram.a_position_handle, quadBuffer.itemSize, gl.FLOAT, false, 16, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, quadBuffer.numItems);
+    gl.vertexAttribPointer(this.glProgram.a_position_handle, buffer.itemSize, gl.FLOAT, false, 16, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.numItems);
   };
 
   return rectangle;

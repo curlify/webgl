@@ -48,7 +48,7 @@ var text = function(txt,fontsize,fontface,color,w,h) {
 
   var w = w ? w : screenWidth
 
-  var instance = new quad("text : "+txt+" : "+w+","+h);
+  var instance = quad.new("text : "+txt+" : "+w+","+h);
   console.log("NEW TEXT: "+instance.identifier)
 
   instance.glProgram = image_program.getProgram()
@@ -148,14 +148,16 @@ var text = function(txt,fontsize,fontface,color,w,h) {
     gl.uniformMatrix4fv(this.glProgram.u_projection_handle, false, this.projectionMatrix);
     gl.uniformMatrix4fv(this.glProgram.u_view_handle, false, this.viewMatrix);
     gl.uniformMatrix4fv(this.glProgram.u_model_handle, false, this.quadModelMatrix);
-    
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+
+    var buffer = (this.buffer ? this.buffer : quad.buffer)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.enableVertexAttribArray(this.glProgram.a_position_handle)
     gl.enableVertexAttribArray(this.glProgram.a_tex_coordinate_handle)
 
-    gl.vertexAttribPointer(this.glProgram.a_position_handle, quadBuffer.itemSize, gl.FLOAT, false, 16, 0);
-    gl.vertexAttribPointer(this.glProgram.a_tex_coordinate_handle, quadBuffer.itemSize, gl.FLOAT, false, 16, 8);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, quadBuffer.numItems);
+    gl.vertexAttribPointer(this.glProgram.a_position_handle, buffer.itemSize, gl.FLOAT, false, 16, 0);
+    gl.vertexAttribPointer(this.glProgram.a_tex_coordinate_handle, buffer.itemSize, gl.FLOAT, false, 16, 8);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.numItems);
   };
 
 

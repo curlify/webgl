@@ -1,9 +1,9 @@
 
 var fbo_program = {
-  program : null,
+  glProgram : null,
   getProgram : function() {
-    if (this.program == null) this.loadProgram()
-    return this.program
+    if (this.glProgram == null) this.loadProgram()
+    return this.glProgram
   },
   loadProgram : function() {
     var vertex = {
@@ -43,38 +43,17 @@ var fbo_program = {
 
     var vertexShader = createShader(gl, vertex)
     var fragmentShader = createShader(gl, fragment)
-    var program = loadProgram(gl, [vertexShader, fragmentShader]);
 
-    program.a_position_handle = gl.getAttribLocation(program, "a_position");
-    program.a_tex_coordinate_handle = gl.getAttribLocation(program, "a_tex_coordinate");
-
-    program.u_alpha_handle = gl.getUniformLocation(program, "u_alpha");
-    program.u_model_handle = gl.getUniformLocation(program, "u_model");
-    program.u_view_handle = gl.getUniformLocation(program, "u_view");
-    program.u_projection_handle = gl.getUniformLocation(program, "u_projection");
-
-    program.buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, program.buffer);
-    vertices = [
-      -1, -1, 0, 0,
-       1, -1, 1, 0,
-      -1,  1, 0, 1,
-       1,  1, 1, 1,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    program.buffer.itemSize = 2;
-    program.buffer.numItems = 4;
-
-    this.program = program
+    this.glProgram = loadProgram(gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_model","u_view","u_projection"]);
   }
 };
 
 
-var fbo_object = function(identifier,w,h) {
+var fbo_object = function(identifier,w,h,disable_alpha) {
 
-  var instance = new quad("fbo_object : "+identifier,w,h);
+  var instance = quad.new("fbo_object : "+identifier,w,h);
 
-  instance.program = fbo_program.getProgram()
+  instance.glProgram = fbo_program.getProgram()
   console.log("fbo_object.new(",instance.dentifier,instance.size.width,instance.size.height,")")
 
   instance.dobypassFbo = false
@@ -93,11 +72,12 @@ var fbo_object = function(identifier,w,h) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, instance.framebuffer.width, instance.framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  var colormode = (disable_alpha ? gl.RGB : gl.RGBA)
+
+  gl.texImage2D(gl.TEXTURE_2D, 0, colormode, instance.framebuffer.width, instance.framebuffer.height, 0, colormode, gl.UNSIGNED_BYTE, null);
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, instance.texture, 0);
 
   gl.bindTexture(gl.TEXTURE_2D, null);
-  gl.bindRenderbuffer(gl.RENDERBUFFER, null);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
   instance.preStep = function(timedelta) {
@@ -110,41 +90,46 @@ var fbo_object = function(identifier,w,h) {
   }
 
   instance.updateFbo = function() {
+    scene.addFboUpdate(instance)
+  }
+
+  instance.renderFbo = function() {
+    gl.bindTexture(gl.TEXTURE_2D, null);
     var previousframebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING)
 
     var previousscreenwidth = screenWidth
     var previousscreenheight = screenHeight
-    var previouslayoutwidth = layoutWidth
-    var previouslayoutheight = layoutHeight
-    var previouslayoutoffset = {x:layoutOffset.x,y:layoutOffset.y}
+    var previouslayoutwidth = curlify.layoutWidth
+    var previouslayoutheight = curlify.layoutHeight
+    var previouslayoutoffset = {x:curlify.layoutOffset.x,y:curlify.layoutOffset.y}
 
-    gl.viewport(0, 0, this.size.width, this.size.height)
+    gl.viewport(0, 0, instance.size.width, instance.size.height)
     gl.bindFramebuffer(gl.FRAMEBUFFER, instance.framebuffer);
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
 
-    screenWidth = this.size.width
-    screenHeight = this.size.height
-    layoutWidth = this.size.width
-    layoutHeight = this.size.height
-    layoutOffset = {x:0,y:0}
+    screenWidth = instance.size.width
+    screenHeight = instance.size.height
+    curlify.layoutWidth = instance.size.width
+    curlify.layoutHeight = instance.size.height
+    curlify.layoutOffset = {x:0,y:0}
 
-    for (var i = 0; i < this.children.length; i++) {
-      this.children[i].parent = null;
-      this.children[i].viewMatrix = camera.viewMatrix
-      this.children[i].drawTree();
+    for (var i = 0; i < instance.children.length; i++) {
+      instance.children[i].parent = null;
+      instance.children[i].viewMatrix = camera.viewMatrix
+      instance.children[i].drawTree();
     };
 
     screenWidth = previousscreenwidth
     screenHeight = previousscreenheight
-    layoutWidth = previouslayoutwidth
-    layoutHeight = previouslayoutheight
-    layoutOffset = previouslayoutoffset
+    curlify.layoutWidth = previouslayoutwidth
+    curlify.layoutHeight = previouslayoutheight
+    curlify.layoutOffset = previouslayoutoffset
 
-    gl.viewport(layoutOffset.x, layoutOffset.y, layoutWidth, layoutHeight)
+    gl.viewport(curlify.layoutOffset.x, curlify.layoutOffset.y, curlify.layoutWidth, curlify.layoutHeight)
     gl.bindFramebuffer(gl.FRAMEBUFFER, previousframebuffer);
 
-    this.lastUpdated = sys.timestamp()
+    instance.lastUpdated = sys.timestamp()
   }
 
   instance.drawTree = function() {
@@ -169,31 +154,33 @@ var fbo_object = function(identifier,w,h) {
 
   instance.draw = function() {
 
-    gl.useProgram(this.program);
+    gl.useProgram(this.glProgram.program);
 
     gl.activeTexture(gl.TEXTURE0)
     gl.bindTexture(gl.TEXTURE_2D, instance.texture)
-    gl.uniform1i(this.program.u_texture_handle, 0)
+    gl.uniform1i(this.glProgram.u_texture_handle, 0)
 
-    gl.uniform1f(this.program.u_alpha_handle, this.absolutealpha());
+    gl.uniform1f(this.glProgram.u_alpha_handle, this.absolutealpha());
 
-    gl.uniformMatrix4fv(this.program.u_projection_handle, false, this.projectionMatrix);
-    gl.uniformMatrix4fv(this.program.u_view_handle, false, this.viewMatrix);
-    gl.uniformMatrix4fv(this.program.u_model_handle, false, this.quadModelMatrix);
+    gl.uniformMatrix4fv(this.glProgram.u_projection_handle, false, this.projectionMatrix);
+    gl.uniformMatrix4fv(this.glProgram.u_view_handle, false, this.viewMatrix);
+    gl.uniformMatrix4fv(this.glProgram.u_model_handle, false, this.quadModelMatrix);
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.program.buffer);
-    gl.enableVertexAttribArray(this.program.a_position_handle)
-    gl.enableVertexAttribArray(this.program.a_tex_coordinate_handle)
+    var buffer = (this.buffer ? this.buffer : quad.buffer)
 
-    gl.vertexAttribPointer(this.program.a_position_handle, this.program.buffer.itemSize, gl.FLOAT, false, 16, 0);
-    gl.vertexAttribPointer(this.program.a_tex_coordinate_handle, this.program.buffer.itemSize, gl.FLOAT, false, 16, 8);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.program.buffer.numItems);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.enableVertexAttribArray(this.glProgram.a_position_handle)
+    gl.enableVertexAttribArray(this.glProgram.a_tex_coordinate_handle)
+
+    gl.vertexAttribPointer(this.glProgram.a_position_handle, buffer.itemSize, gl.FLOAT, false, 16, 0);
+    gl.vertexAttribPointer(this.glProgram.a_tex_coordinate_handle, buffer.itemSize, gl.FLOAT, false, 16, 8);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.numItems);
   };
 
   return instance;
 }
 
-fbo_object.new = function(identifier,w,h) {
-  return new fbo_object(identifier,w,h)
+fbo_object.new = function(identifier,w,h,disable_alpha) {
+  return new fbo_object(identifier,w,h,disable_alpha)
 }
 

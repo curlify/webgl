@@ -24,7 +24,7 @@ var animator = function() {
         var value = config[key]
         if (CONFIG_KEYS[key] == null) {
 
-          assert(target[key] != null, "Animated property cannot be initially nil : "+key)
+          curlify.assert(target[key] != null, "Animated property cannot be initially nil : "+key)
           init[key] = target[key]
         }
       }
@@ -173,62 +173,62 @@ animator.inOutQuart = function(initial, final, pos) {
 }
 
 animator.inSine = function(initial, final, pos) {
-  return initial + (final - initial) * (1 - math.cos(pos * math.pi/2))
+  return initial + (final - initial) * (1 - Math.cos(pos * Math.pi/2))
 }
 
 animator.outSine = function(initial, final, pos) {
-  return initial + (final - initial) * math.sin(pos * math.pi/2)
+  return initial + (final - initial) * Math.sin(pos * Math.pi/2)
 }
 
 animator.inOutSine = function(initial, final, pos) {
-  return initial - (final - initial)/2 * (math.cos(math.pi * pos) - 1)
+  return initial - (final - initial)/2 * (Math.cos(Math.pi * pos) - 1)
 }
 
 animator.inExpo = function(initial, final, pos) {
   pos = pos - 1 // map range [0, 1.0] to range [-1, 0]
-  return initial + (final - initial) * math.pow(2, 10*pos)
+  return initial + (final - initial) * Math.pow(2, 10*pos)
 }
 
 animator.outExpo = function(initial, final, pos) {
-  return initial + (final - initial) * (1 - math.pow(2, -10*pos))
+  return initial + (final - initial) * (1 - Math.pow(2, -10*pos))
 }
 
 animator.inOutExpo = function(initial, final, pos) {
   if (pos < 0.5) {
     pos = pos * 2 - 1 // map range [0, 1.0) to range [-1, 0)
-    return initial + (final - initial)/2 * math.pow(2, 10*pos)
+    return initial + (final - initial)/2 * Math.pow(2, 10*pos)
   } else {
     pos = (pos - 0.5) * 2 // map range [0.5, 1.0] to range [0, 1.0]
-    return initial + (final - initial)/2 * (2 - math.pow(2, -10*pos))
+    return initial + (final - initial)/2 * (2 - Math.pow(2, -10*pos))
   }
 }
 
 animator.inCirc = function(initial, final, pos) {
-  return initial + (final - initial) * (1 - math.sqrt(1 - pos*pos))
+  return initial + (final - initial) * (1 - Math.sqrt(1 - pos*pos))
 }
 
 animator.outCirc = function(initial, final, pos) {
   pos = pos - 1 // map range [0, 1.0] to range [-1, 0]
-  return initial + (final - initial) * math.sqrt(1 - pos*pos)
+  return initial + (final - initial) * Math.sqrt(1 - pos*pos)
 }
 
 animator.inOutCirc = function(initial, final, pos) {
   if (pos < 0.5) {
     pos = pos * 2 // map range [0, 0.5) to range [0, 1.0)
-    return initial + (final - initial)/2 * (1 - math.sqrt(1 - pos*pos))
+    return initial + (final - initial)/2 * (1 - Math.sqrt(1 - pos*pos))
   } else {
     pos = (pos - 0.5) * 2  - 1 // map range [0.5, 1.0] to range [-1, 0]
-    return initial + (final - initial)/2 * (1 + math.sqrt(1 - pos*pos))
+    return initial + (final - initial)/2 * (1 + Math.sqrt(1 - pos*pos))
   }
 }
 
 animator.inElastic = function(initial, final, pos) {
   pos = pos - 1 // Map range [0, 1] to range [-1, 0]
-  return initial - (final - initial) * math.pow(2, 10*pos) * math.sin((pos - 0.0777777) * 6 * math.pi)
+  return initial - (final - initial) * Math.pow(2, 10*pos) * Math.sin((pos - 0.0777777) * 6 * Math.pi)
 }
 
 animator.outElastic = function(initial, final, pos) {
-  return initial + (final - initial) * (math.pow(2, -10*pos) * math.sin((pos - 0.0777777) * 6 * math.pi) + 1)
+  return initial + (final - initial) * (Math.pow(2, -10*pos) * Math.sin((pos - 0.0777777) * 6 * Math.pi) + 1)
 }
 
 
