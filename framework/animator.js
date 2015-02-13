@@ -1,5 +1,11 @@
 
-var animator = function() {
+(function() {
+
+var animator = (function() {
+
+  console.log("initialize animator module")
+
+  var sys = curlify.getModule("sys")
 
   var CONFIG_KEYS = {
     time : true,
@@ -9,107 +15,114 @@ var animator = function() {
   }
 
   return {
-    animations : [],
 
-    animate : function(target, config) {
-      if (config.ease == null) {
-        config.ease = animator.linear
+    new : function() {
+
+      return {
+
+        animations : [],
+
+        animate : function(target, config) {
+          if (config.ease == null) {
+            config.ease = animator.linear
+          }
+
+          if (config.start == null) config.start = 0;
+
+          var init = {}
+          // gather initial values
+          for (var key in config) {
+            var value = config[key]
+            if (CONFIG_KEYS[key] == null) {
+
+              curlify.assert(target[key] != null, "Animated property cannot be initially nil : "+key)
+              init[key] = target[key]
+            }
+          }
+
+          this.animations.push(
+            {
+              target : target,
+              start : sys.timestamp() + config.start,
+              deadline : sys.timestamp() + config.start + config.time,
+              config : config,
+              init : init,
+            }        
+          )
+        },
+
+        step : function() {
+
+          var dead = []
+          var now = sys.timestamp()
+
+          for (var key in this.animations) {
+            var animation = this.animations[key]
+            var deadline = animation.deadline
+            var pos = 0
+            
+            if (animation.paused == true) {
+              now = animation.pausetimestamp
+            }
+            
+            if (now < animation.deadline) {
+              pos = 1.0 - ((animation.deadline - now) / animation.config.time)
+            } else if (now < animation.start) {
+              pos = 0.0
+            } else {
+              pos = 1.0
+              dead.push(key)
+            }
+
+            pos = Math.max(pos, 0.00001)
+            for (var key in animation.init) {
+              initial = animation.init[key]
+              animation.target[key] = animation.config.ease(initial, animation.config[key], pos)
+            }
+            
+            //sys.requestRepaint()
+          }
+          
+          //remove dead animations
+          for (i = dead.length-1; i >= 0; i--) {
+            var completeFunc = this.animations[dead[i]].config.onComplete
+            //delete this.animations[dead[i]]
+            this.animations.splice(dead[i],1)
+            //console.log("animations.length",this.animations.length)
+            if (completeFunc != null) {
+              completeFunc()
+            }
+          }
+          
+        },
+
+        pause : function() {
+          for (var k in this.animations) {
+            this.animations [k].paused = true
+            this.animations [k].pausetimestamp = sys.timestamp()
+          }
+        },
+
+        resume : function() {
+          for (var k in this.animations) {
+            this.animations [k].paused = false
+            this.animations [k].deadline = this.animations [k].deadline + (sys.timestamp() - self.animations [k].pausetimestamp)
+          }
+        },
+
+        stop : function() {
+          for (var k in this.animations) {
+            this.animations [k].init = {}
+            this.animations [k].config.onComplete = null
+          }
+          this.animations = []
+        },
       }
-
-      if (config.start == null) config.start = 0;
-
-      var init = {}
-      // gather initial values
-      for (var key in config) {
-        var value = config[key]
-        if (CONFIG_KEYS[key] == null) {
-
-          curlify.assert(target[key] != null, "Animated property cannot be initially nil : "+key)
-          init[key] = target[key]
-        }
-      }
-
-      this.animations.push(
-        {
-          target : target,
-          start : sys.timestamp() + config.start,
-          deadline : sys.timestamp() + config.start + config.time,
-          config : config,
-          init : init,
-        }        
-      )
-    },
-
-    step : function() {
-
-      var dead = []
-      var now = sys.timestamp()
-
-      for (var key in this.animations) {
-        var animation = this.animations[key]
-        var deadline = animation.deadline
-        var pos = 0
-        
-        if (animation.paused == true) {
-          now = animation.pausetimestamp
-        }
-        
-        if (now < animation.deadline) {
-          pos = 1.0 - ((animation.deadline - now) / animation.config.time)
-        } else if (now < animation.start) {
-          pos = 0.0
-        } else {
-          pos = 1.0
-          dead.push(key)
-        }
-
-        pos = Math.max(pos, 0.00001)
-        for (var key in animation.init) {
-          initial = animation.init[key]
-          animation.target[key] = animation.config.ease(initial, animation.config[key], pos)
-        }
-        
-        //sys.requestRepaint()
-      }
-      
-      //remove dead animations
-      for (i = dead.length-1; i >= 0; i--) {
-        var completeFunc = this.animations[dead[i]].config.onComplete
-        //delete this.animations[dead[i]]
-        this.animations.splice(dead[i],1)
-        //console.log("animations.length",this.animations.length)
-        if (completeFunc != null) {
-          completeFunc()
-        }
-      }
-      
-    },
-
-    pause : function() {
-      for (var k in this.animations) {
-        this.animations [k].paused = true
-        this.animations [k].pausetimestamp = sys.timestamp()
-      }
-    },
-
-    resume : function() {
-      for (var k in this.animations) {
-        this.animations [k].paused = false
-        this.animations [k].deadline = this.animations [k].deadline + (sys.timestamp() - self.animations [k].pausetimestamp)
-      }
-    },
-
-    stop : function() {
-      for (var k in this.animations) {
-        this.animations [k].init = {}
-        this.animations [k].config.onComplete = null
-      }
-      this.animations = []
-    },   
+    }
 
   };
 
-};
+})()
 
 
 animator.linear = function(initial, final, pos) {
@@ -232,7 +245,7 @@ animator.outElastic = function(initial, final, pos) {
 }
 
 
-animator.new = function() {
-  return new animator()
-}
+curlify.module("animator",animator)
+
+})()
 

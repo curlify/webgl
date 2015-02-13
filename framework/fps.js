@@ -1,15 +1,28 @@
 
-var fps = {}
-fps.fpsCounter = 0
-fps.fpsTimestamp = 0
+(function() {
 
-fps.updateFps = function() {
-  if (fps.fpsCounter == 100) {
-    fps.fpsCounter = 0
-    var timestamp = sys.timestamp()
-    var current_fps = 100000 / (timestamp - fps.fpsTimestamp)
-    console.log("FPS : " + current_fps)
-    fps.fpsTimestamp = timestamp
-  }
-  fps.fpsCounter = fps.fpsCounter + 1
-}
+  var fps = (function() {
+
+    console.log("initialize fps module")
+
+    var sys = curlify.getModule("sys")
+
+    var fpsCounter = 0
+    var fpsTimestamp = 0
+
+    return {
+      updateFps : function() {
+        if (fpsCounter == 100) {
+          fpsCounter = 0
+          var timestamp = sys.timestamp()
+          var current_fps = 100000 / (timestamp - fpsTimestamp)
+          console.log("FPS : " + current_fps)
+          fpsTimestamp = timestamp
+        }
+        fpsCounter = fpsCounter + 1
+      }
+    }
+  })()
+
+  curlify.module("fps",fps)
+})()

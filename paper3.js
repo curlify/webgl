@@ -1,7 +1,8 @@
 
-var app = function() {
+var paper3 = {}
+paper3.new = function() {
 
-    var instance = new object ("application")
+    var instance = object.new ("application")
 
     var content = instance.add( object.new("content") )
 
@@ -218,8 +219,4 @@ var app = function() {
     }
 
     return instance
-}
-
-app.new = function() {
-  return new app()
 }

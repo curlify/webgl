@@ -2,7 +2,7 @@
 var ad = function(parent,json) {
 
   console.log("ad",json)
-  var instance = new object ("ad")
+  var instance = object.new ("ad")
 
   var adplace = instance.add( object.new("adobject") )
   var buttonoverlay = instance.add( object.new("buttons"))

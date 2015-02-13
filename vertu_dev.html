@@ -1,0 +1,63 @@
+<html> 
+  <head>
+
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+    <style>
+      body, html { 
+        width: 100%;
+        height: 100%;
+        border: 0px;
+        padding: 0px;
+        margin: 0px;
+        background-image: url(vertu-bg.jpg);
+        background-position: center top;
+        background-size: cover;
+      }
+      #glcanvas {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+
+    <script type="text/javascript" src="jszip.min.js"></script>
+    <script type="text/javascript" src="jszip-utils.min.js"></script>
+    <script type="text/javascript" src="glMatrix.min.js"></script>
+    
+    <script type="text/javascript" src="framework/glUtils.js"></script>
+    <script type="text/javascript" src="framework/fps.js"></script>
+    <script type="text/javascript" src="framework/jsonfile.js"></script>
+    <script type="text/javascript" src="framework/sys.js"></script>
+    <script type="text/javascript" src="framework/sprite.js"></script>
+    <script type="text/javascript" src="framework/animator.js"></script>
+    <script type="text/javascript" src="framework/focusable.js"></script>
+    <script type="text/javascript" src="framework/scrollable.js"></script>
+    <script type="text/javascript" src="framework/carousel.js"></script>
+    <script type="text/javascript" src="framework/carousel_vertical.js"></script>
+    <script type="text/javascript" src="framework/rectangle.js"></script>
+    <script type="text/javascript" src="framework/video.js"></script>
+    <script type="text/javascript" src="framework/text.js"></script>
+    <script type="text/javascript" src="framework/masked_image.js"></script>
+    <script type="text/javascript" src="framework/image.js"></script>
+    <script type="text/javascript" src="framework/image_plane.js"></script>
+    <script type="text/javascript" src="framework/button.js"></script>
+    <script type="text/javascript" src="framework/fbo_object.js"></script>
+    <script type="text/javascript" src="framework/quad.js"></script>
+    <script type="text/javascript" src="framework/plane.js"></script>
+    <script type="text/javascript" src="framework/object.js"></script>
+
+    <script type="text/javascript" src="vertuad.js"></script>
+    <script type="text/javascript" src="cmsloader.js"></script>
+    <script type="text/javascript" src="curled_image.js"></script>
+
+    <script type="text/javascript" src="main.js"></script>
+
+  </head>
+
+  <body onload="curlify.start({canvas:'glcanvas',script:'vertu_curl',width:480,height:800})">
+    <canvas id="glcanvas">
+      Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+    </canvas>
+  </body>
+
+</html>

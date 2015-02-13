@@ -20,36 +20,20 @@
       }
     </style>
 
-    <script type="text/javascript" src="framework/jszip.min.js"></script>
-    <script type="text/javascript" src="framework/jszip-utils.min.js"></script>
-    <script type="text/javascript" src="framework/glUtils.js"></script>
-    <script type="text/javascript" src="framework/glMatrix.min.js"></script>
-    <script type="text/javascript" src="framework/fps.js"></script>
-    <script type="text/javascript" src="framework/sys.js"></script>
-    <script type="text/javascript" src="framework/jsonfile.js"></script>
-    <script type="text/javascript" src="framework/animator.js"></script>
-    <script type="text/javascript" src="framework/focusable.js"></script>
-    <script type="text/javascript" src="framework/carousel.js"></script>
-    <script type="text/javascript" src="framework/carousel_vertical.js"></script>
-    <script type="text/javascript" src="framework/rectangle.js"></script>
-    <script type="text/javascript" src="framework/video.js"></script>
-    <script type="text/javascript" src="framework/text.js"></script>
-    <script type="text/javascript" src="framework/image.js"></script>
-    <script type="text/javascript" src="framework/button.js"></script>
-    <script type="text/javascript" src="framework/fbo_object.js"></script>
-    <script type="text/javascript" src="framework/quad.js"></script>
-    <script type="text/javascript" src="framework/object.js"></script>
+    <script type="text/javascript" src="http://curlify.io/dev/jszip.min.js"></script>
+    <script type="text/javascript" src="http://curlify.io/dev/jszip-utils.min.js"></script>
+    <script type="text/javascript" src="http://curlify.io/dev/glMatrix.min.js"></script>
+    <!--script type="text/javascript" src="curlify.min.js"></script-->
+    <script type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script>
 
-    <script type="text/javascript" src="mirrorimage.js"></script>
+    <!--script type="text/javascript" src="mirrorimage.js"></script>
     <script type="text/javascript" src="paperad.js"></script>
     <script type="text/javascript" src="cmsloader.js"></script>
-    <script type="text/javascript" src="submenu.js"></script>
-
-    <script id="main" type="text/javascript" src="main.js" app="paper3"></script>
+    <script type="text/javascript" src="submenu.js"></script-->
 
   </head>
 
-  <body onload="start()">
+  <body onload="curlify.start({canvas:'glcanvas',script:'test22',renderInterval:1000/60})">
     <canvas id="glcanvas">
       Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
     </canvas>
