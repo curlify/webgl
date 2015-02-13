@@ -47,7 +47,7 @@
     var projectionMatrix = createProjection(1, h/w, near,far);
 
     var viewMatrix = mat4.identity( mat4.create() );
-    mat4.translate( viewMatrix, vec3.create([0,0,-(far-near)/2]) );
+    mat4.translate( viewMatrix, viewMatrix, vec3.clone([0,0,-(far-near)/2]) );
     var quadToScreenScale = ((far-near)/2)/near;
 
     var cam = {near:near,far:far,width:w,height:h,projectionMatrix:projectionMatrix, viewMatrix:viewMatrix, translateScale:quadToScreenScale};

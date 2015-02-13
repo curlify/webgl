@@ -88,7 +88,7 @@
 
     new : function( source ) {
       var gl = curlify.gl
-      
+
       var curl = image.new(source,plane.new("curlable",15,15))
       curl.drawbackside = true
       curl.depthtest = true
@@ -119,7 +119,7 @@
         var y = Math.min(curlify.screenHeight/2,curl.pointerPos.y-curl.pressOffset.y)
         this.cylPos = [ x/(this.size.width/2)*1.1,y/(this.size.height/2)*1.1 ]
         this.cylDir = [(x-this.pressStart.x) / this.size.width,(y-this.pressStart.y) / this.size.height,0]
-        this.cylDir = vec3.normalize( this.cylDir )
+        this.cylDir = vec3.normalize( this.cylDir,this.cylDir )
       }
 
       curl.relativePress = function(x,y){
