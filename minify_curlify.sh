@@ -19,6 +19,6 @@ framework/carousel.js \
 framework/carousel_vertical.js \
 framework/scrollable.js \
 main.js \
--o curlify.encapsulated.min.js \
+-o curlify.min.js \
 -m \
 -c

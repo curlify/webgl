@@ -15,7 +15,7 @@
           return null
         }
         //console.log("image.new(",source,")",curlify.zipfile)
-        image = curlify.addImageElement()
+        image = new Image() //curlify.addImageElement()
         if (curlify.zipfile != null) {
           console.log("image.source zip",zipEntry,source,curlify.zipfile)
           var zipEntry = curlify.zipfile.file(source)

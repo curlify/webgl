@@ -1,8 +1,8 @@
-/*
+/*!
 Curlify - A javascript webgl framework
 <http://curlify.io>
 
-(c) 2015 Curlify Ou
+(c) 2013-2015 Curlify LLC
 */
 
 var curlify = (function() {
