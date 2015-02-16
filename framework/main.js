@@ -3,6 +3,8 @@
 
   console.log("inititalize main")
 
+  var revision = "3"
+
   var scene = curlify.getModule("scene")
 
   var glcanvas;
@@ -65,6 +67,9 @@
     }
     catch(e) {}
     
+    //var sharedResourcesExtension = curlify.gl.getExtension("WEBGL_shared_resources");
+    //console.log("shared",sharedResourcesExtension)
+
     // If we don't have a GL context, give up now
     if (!curlify.gl) {
       alert("Unable to initialize WebGL. Your browser may not support it.");
@@ -418,7 +423,6 @@
 
   curlify.stop = function() {
 
-    if (true) return
     console.log("Cleaning up...")
 
     if (glcanvas == null) {
@@ -459,10 +463,14 @@
       window.clearInterval(curlify.intervalId);
     }
 
+    curlify.clearModuleBuffersAndPrograms()
+
     running = false
   }
 
   curlify.start = function(parameters) {
+
+    console.log("curlify.start - revision",revision)
 
     if ( running ) curlify.stop()
     running = true
@@ -478,18 +486,8 @@
     curlify.screenWidth = (width ? width : 480)
     curlify.screenHeight = (height ? height : 852)
 
-    // reuse glcanvas if targeting the same canvas as previously
-    var newglcanvas = document.getElementById(canvas);
-    if (glcanvas != null) {
-      if (newglcanvas != glcanvas) {
-        console.log("canvas changed - initialize new webgl")
-        glcanvas = newglcanvas
-        curlify.gl = initWebGL(glcanvas);
-      }
-    } else {
-      glcanvas = newglcanvas
-      curlify.gl = initWebGL(glcanvas);
-    }
+    glcanvas = document.getElementById(canvas);
+    curlify.gl = initWebGL(glcanvas);
 
     if ('ontouchstart' in window) {
       //console.log("USE TOUCH MOUSE")

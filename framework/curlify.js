@@ -29,6 +29,24 @@ var curlify = (function() {
       return modules[id]
     },
 
+    clearModuleBuffersAndPrograms : function() {
+      console.log("clearModuleBuffersAndPrograms()")
+
+      // loop all modules and reset glprograms
+      for (var i in modules){
+        var module = modules[i]
+        console.log("checking",module.id)
+        if (module.default_program != null) {
+          console.log("clearing module program",module.id)
+          module.default_program.glProgram = null
+        }
+        if (module.buffer != null) {
+          console.log("clearing module buffer",module.id)
+          module.buffer = null
+        }
+      }
+    },
+
   }
 
 })()
