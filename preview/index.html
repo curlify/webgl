@@ -10,9 +10,6 @@
         border: 0px;
         padding: 0px;
         margin: 0px;
-        background-image: url(bg.jpg);
-        background-position: center top;
-        background-size: cover;
       }
       #glcanvas {
         width: 100%;
@@ -22,18 +19,12 @@
 
     <script type="text/javascript" src="http://curlify.io/dev/jszip.min.js"></script>
     <script type="text/javascript" src="http://curlify.io/dev/jszip-utils.min.js"></script>
-    <script type="text/javascript" src="http://curlify.io/dev/glMatrix.min.js"></script>
-    <!--script type="text/javascript" src="curlify.min.js"></script-->
+    <script type="text/javascript" src="http://curlify.io/dev/gl-matrix-min.js"></script>
     <script type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script>
-
-    <!--script type="text/javascript" src="mirrorimage.js"></script>
-    <script type="text/javascript" src="paperad.js"></script>
-    <script type="text/javascript" src="cmsloader.js"></script>
-    <script type="text/javascript" src="submenu.js"></script-->
 
   </head>
 
-  <body onload="curlify.start({canvas:'glcanvas',script:'test22',renderInterval:1000/60})">
+  <body onload="curlify.start({canvas:'glcanvas',script:'http://api.curlify.com/units/ads/1753/assets/dev.zip',renderInterval:1000/60})">
     <canvas id="glcanvas">
       Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
     </canvas>

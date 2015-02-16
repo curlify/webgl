@@ -21,6 +21,8 @@
   curlify.layoutHeight = null
   curlify.layoutOffset = {x:0,y:0}
   curlify.layoutScale = {x:1,y:1}
+
+  curlify.gl = null
   curlify.camera = null
 
   curlify.viewWidth = null
@@ -75,21 +77,23 @@
   function mousedown(e) {
     if (scene.isAnimating() || touch == true) return
     console.log("mousedown : "+e.clientX+","+e.clientY,curlify.layoutOffset.x,curlify.layoutOffset.y)
+    var tgt = e.currentTarget.getBoundingClientRect()
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.clientX-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-curlify.layoutOffset.y)*curlify.layoutScale.y)
-    target.drag((e.clientX-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-curlify.layoutOffset.y)*curlify.layoutScale.y)
+    target.press((e.clientX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
+    target.drag((e.clientX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
   }
 
   function mouseup(e) {
     scene.resetPointerStealer()
     if (scene.isAnimating() || touch == false) return
     console.log("mouseup : "+e.clientX+","+e.clientY)
+    var tgt = e.currentTarget.getBoundingClientRect()
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release((e.clientX-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-curlify.layoutOffset.y)*curlify.layoutScale.y)
+    target.release((e.clientX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
   }
 
   function mouseout(e) {
@@ -100,21 +104,23 @@
   function mousemove(e) {
     if (scene.isAnimating() || touch == false) return
     //console.log("mousemove : "+e.clientX+","+e.clientY)
+    var tgt = e.currentTarget.getBoundingClientRect()
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.clientX-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-curlify.layoutOffset.y)*curlify.layoutScale.y)
+      target.drag((e.clientX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
     }
   }
 
   function touchstart(e) {
     if (scene.isAnimating() || touch == true) return
     //console.log("touchstart : "+e.touches[0].pageX+","+e.touches[0].pageY)
+    var tgt = e.currentTarget.getBoundingClientRect()
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.touches[0].pageX-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-curlify.layoutOffset.y)*curlify.layoutScale.y)
-    target.drag((e.touches[0].pageX-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-curlify.layoutOffset.y)*curlify.layoutScale.y)
+    target.press((e.touches[0].pageX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
+    target.drag((e.touches[0].pageX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
     lasttouch = e
   }
 
@@ -122,20 +128,22 @@
     scene.resetPointerStealer()
     if (scene.isAnimating() || touch == false ) return
     //console.log("touchend : "+lasttouch.touches[0].pageX+","+lasttouch.touches[0].pageY)
+    var tgt = e.currentTarget.getBoundingClientRect()
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release(lasttouch.touches[0].pageX-curlify.layoutOffset.x,lasttouch.touches[0].pageY-curlify.layoutOffset.y)
+    target.release(lasttouch.touches[0].pageX-tgt.left-curlify.layoutOffset.x,lasttouch.touches[0].pageY-tgt.top-curlify.layoutOffset.y)
   }
 
   function touchmove(e) {
     e.preventDefault()
     if (scene.isAnimating() || touch == false) return
     //console.log("touchmove : "+e.touches[0].pageX+","+e.touches[0].pageY)
+    var tgt = e.currentTarget.getBoundingClientRect()
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.touches[0].pageX-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-curlify.layoutOffset.y)*curlify.layoutScale.y)
+      target.drag((e.touches[0].pageX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
     }
     lasttouch = e
   }
@@ -410,6 +418,7 @@
 
   curlify.stop = function() {
 
+    if (true) return
     console.log("Cleaning up...")
 
     if (glcanvas == null) {

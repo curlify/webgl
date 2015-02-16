@@ -1,5 +1,5 @@
 uglifyjs \
-curlify.js \
+framework/curlify.js \
 framework/glutils.js \
 framework/sys.js \
 framework/fps.js \
@@ -18,7 +18,7 @@ framework/sprite.js \
 framework/carousel.js \
 framework/carousel_vertical.js \
 framework/scrollable.js \
-main.js \
+framework/main.js \
 -o curlify.min.js \
 -m \
 -c
