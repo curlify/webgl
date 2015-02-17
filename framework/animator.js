@@ -1,6 +1,8 @@
 
 (function() {
 
+var curlify = document.currentScript.curlify
+
 var animator = (function() {
 
   console.log("initialize animator module")

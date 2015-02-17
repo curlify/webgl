@@ -1,5 +1,7 @@
 
 (function() {
+  var curlify = document.currentScript.curlify
+  
   var sys = (function(){
 
     console.log("initialize sys module")

@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var quad = (function() {
 
     console.log("initialize quad module")

@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var object = curlify.getModule("object")
   var focusable = curlify.getModule("focusable")
   var image = curlify.getModule("image")

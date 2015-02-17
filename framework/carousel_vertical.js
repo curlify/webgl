@@ -1,9 +1,10 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+
   var animator = curlify.getModule("animator")
   var carousel = curlify.getModule("carousel")
-
 
   var carousel_vertical = (function() {
 

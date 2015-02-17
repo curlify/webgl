@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var image = (function() {
 
     console.log("initialize image module")

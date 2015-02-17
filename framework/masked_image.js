@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var glutils = curlify.getModule("glutils")
   var image = curlify.getModule("image")
   var quad = curlify.getModule("quad")

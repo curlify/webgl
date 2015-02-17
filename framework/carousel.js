@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var carousel = (function() {
 
     console.log("initialize carousel module")

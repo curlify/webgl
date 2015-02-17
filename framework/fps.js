@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var fps = (function() {
 
     console.log("initialize fps module")

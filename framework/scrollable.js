@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var scene = curlify.getModule("scene")
   var animator = curlify.getModule("animator")
   var object = curlify.getModule("object")

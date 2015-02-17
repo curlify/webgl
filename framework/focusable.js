@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var focusable = (function() {
 
     var quad = curlify.getModule("quad")

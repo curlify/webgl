@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var scene = (function() {
 
     console.log("initialize scene module")

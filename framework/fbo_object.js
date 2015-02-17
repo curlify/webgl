@@ -1,6 +1,8 @@
 
 (function() {
 
+  var curlify = document.currentScript.curlify
+  
   var fbo_object = (function() {
 
     console.log("initialize fbo_object module")

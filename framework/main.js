@@ -2,6 +2,7 @@
 (function() {
 
   console.log("inititalize main")
+  var curlify = document.currentScript.curlify
 
   var revision = "3"
 

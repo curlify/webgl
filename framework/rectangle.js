@@ -1,5 +1,8 @@
 
 (function() {
+  
+  var curlify = document.currentScript.curlify
+
   var rectangle = (function(){
 
     console.log("initialize rectangle module")

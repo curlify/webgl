@@ -4,14 +4,13 @@ Curlify - A javascript webgl framework
 
 (c) 2013-2015 Curlify LLC
 */
+(function() {
 
-var curlify = (function() {
-
-  console.log("initialize curlify")
+  console.log("initialize curlify",document.currentScript)
 
   var modules = {}
 
-  return {
+  document.currentScript.curlify = {
 
     module : function(id,codeobject) {
       //console.log("curlify.module",id,codeobject)

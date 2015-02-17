@@ -17,11 +17,12 @@
     <script type="text/javascript" src="http://curlify.io/dev/jszip-utils.min.js"></script>
     <script type="text/javascript" src="http://curlify.io/dev/gl-matrix-min.js"></script>
     <!--script type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script-->
-    <script type="text/javascript" src="../curlify.min.js"></script>
+    <script id="curlify1" type="text/javascript" src="../curlify.min.js"></script>
+    <script id="curlify2" type="text/javascript" src="../curlify.min.js"></script>
 
   </head>
 
-  <body onload="curlify.start({canvas:'glcanvas2',script:'http://api.curlify.com/units/ads/1753/assets/dev.zip',renderInterval:1000/60});curlify.start({canvas:'glcanvas2',script:'http://api.curlify.com/units/ads/1753/assets/dev.zip',renderInterval:1000/60})">
+  <body onload="document.getElementById('curlify1').curlify.start({canvas:'glcanvas2',script:'http://api.curlify.com/units/ads/1753/assets/dev.zip',renderInterval:1000/60});document.getElementById('curlify2').curlify.start({canvas:'glcanvas',script:'http://api.curlify.com/units/ads/1753/assets/dev.zip',renderInterval:1000/60})">
     <img src="back_from_ad.png">
     <img src="loadwheel.png">
     <canvas style="width: 200;height: 200" id="glcanvas"></canvas>

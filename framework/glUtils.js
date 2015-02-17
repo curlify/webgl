@@ -1,6 +1,8 @@
 
 (function() {
 
+var curlify = document.currentScript.curlify
+
 var glutils = (function(){
 
   console.log("initialize glutils module")
