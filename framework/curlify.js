@@ -6,7 +6,7 @@ Curlify - A javascript webgl framework
 */
 (function() {
 
-  console.log("initialize curlify",document.currentScript)
+  console.log("initialize curlify",document.currentScript,document.currentScript.nodeParent)
 
   var modules = {}
 

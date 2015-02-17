@@ -2,6 +2,7 @@
 (function() {
 
   console.log("inititalize main")
+  var currentScript = document.currentScript
   var curlify = document.currentScript.curlify
 
   var revision = "3"
@@ -73,7 +74,7 @@
 
     // If we don't have a GL context, give up now
     if (!curlify.gl) {
-      alert("Unable to initialize WebGL. Your browser may not support it.");
+      console.log("ERROR: Unable to initialize WebGL in target node");
       curlify.gl = null;
     }
     
@@ -476,19 +477,27 @@
     if ( running ) curlify.stop()
     running = true
 
-    curlify.assert( parameters.canvas != null )
+    if (parameters.script == null){
+      console.log("ERROR: no script source set")
+      return
+    }
     curlify.assert( parameters.script != null )
 
-    var canvas = parameters.canvas
-    var script = parameters.script
-    var width = parameters.width
-    var height = parameters.height
+    curlify.screenWidth = (parameters.width ? parameters.width : 480)
+    curlify.screenHeight = (parameters.height ? parameters.height : 852)
 
-    curlify.screenWidth = (width ? width : 480)
-    curlify.screenHeight = (height ? height : 852)
+    glcanvas = parameters.canvas ? document.getElementById(parameters.canvas) : currentScript.parentNode
 
-    glcanvas = document.getElementById(canvas);
+    if (glcanvas == null) {
+      parameters.canvas ? console.log("ERROR: cannot find canvas to draw on:",parameters.canvas) : console.log("ERROR: no canvas to draw to as parentNode:",glcanvas)
+      return
+    }
+
     curlify.gl = initWebGL(glcanvas);
+    // Only continue if WebGL is available and working  
+    if (curlify.gl == null) {
+      return
+    }
 
     if ('ontouchstart' in window) {
       //console.log("USE TOUCH MOUSE")
@@ -506,30 +515,27 @@
 
     curlify.camera = createProjectionAndView(curlify.screenWidth,curlify.screenHeight,3,100);
 
-    // Only continue if WebGL is available and working  
-    if (curlify.gl) {
-      if (window.DeviceMotionEvent) {
-        window.addEventListener('devicemotion', deviceMotionHandler, false)
-      } else {
-        alert("DeviceMotionEvent not supported")
-      }
-      if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', deviceOrientationHandler, false)
-      } else {
-        alert("DeviceOrientationEvent not supported")
-      }
-
-      window.addEventListener('orientationchange', orientationChanged);
-      
-      curlify.require( script )
-        .then( function(scriptobject)
-        {
-          scene.openScene( scriptobject.new() )
-          if (parameters.renderInterval != null) curlify.setRenderInterval(parameters.renderInterval)
-        }
-      )
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', deviceMotionHandler, false)
+    } else {
+      alert("DeviceMotionEvent not supported")
+    }
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', deviceOrientationHandler, false)
+    } else {
+      alert("DeviceOrientationEvent not supported")
     }
 
+    window.addEventListener('orientationchange', orientationChanged);
+    
+    curlify.require( parameters.script )
+      .then( function(scriptobject)
+      {
+        scene.openScene( scriptobject.new() )
+        if (parameters.renderInterval != null) curlify.setRenderInterval(parameters.renderInterval)
+      }
+    )
   }
+
 
 })()
