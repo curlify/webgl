@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-  
+
   var glutils = curlify.getModule("glutils")
   var image = curlify.getModule("image")
   var quad = curlify.getModule("quad")
@@ -59,17 +59,19 @@
             type: "x-shader/x-fragment"
           }
 
-          var vertexShader = glutils.createShader(curlify.gl, vertex)
-          var fragmentShader = glutils.createShader(curlify.gl, fragment)
-          this.glProgram = glutils.loadProgram(curlify.gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_mask_texture","u_alpha","u_model","u_view","u_projection"]);
+          var gl = curlify.localVars.gl
+
+          var vertexShader = glutils.createShader(gl, vertex)
+          var fragmentShader = glutils.createShader(gl, fragment)
+          this.glProgram = glutils.loadProgram(gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_mask_texture","u_alpha","u_model","u_view","u_projection"]);
 
         }
       },
 
       new : function(source,mask) {
 
-        var gl = curlify.gl
-
+        var gl = curlify.localVars.gl
+        
         var instance = image.new(source);
         instance.identifier = "masked_image : "+source+" : "+mask
 

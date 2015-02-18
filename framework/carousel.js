@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-  
+
   var carousel = (function() {
 
     console.log("initialize carousel module")
@@ -17,15 +17,18 @@
 
       new : function(ident,width,height) {
 
+        var screenWidth = curlify.localVars.screenWidth
+        var screenHeight = curlify.localVars.screenHeight
+        
         var container = focusable.new(ident,width,height);
 
         var coverflow = { name:"coverflow", show:[], hide:[] }
-        coverflow.show.push( {target:'position.x',startposition:curlify.screenWidth*1.0,endposition:0,func:animator.linear} )
+        coverflow.show.push( {target:'position.x',startposition:screenWidth*1.0,endposition:0,func:animator.linear} )
         coverflow.show.push( {target:'rotate.y',startposition:Math.PI*0.8,endposition:0,func:animator.linear} )
         coverflow.show.push( {target:'scale.x',startposition:0.6,endposition:1,func:animator.linear} )
         coverflow.show.push( {target:'scale.y',startposition:0.6,endposition:1,func:animator.linear} )
         //coverflow.show.push( {target:'alpha',startposition:0.3,endposition:1,func:animator.linear} )
-        coverflow.hide.push( {target:'position.x',startposition:0,endposition:-curlify.screenWidth*1.0,func:animator.linear} )
+        coverflow.hide.push( {target:'position.x',startposition:0,endposition:-screenWidth*1.0,func:animator.linear} )
         coverflow.hide.push( {target:'rotate.y',startposition:0,endposition:-Math.PI*0.8,func:animator.linear} )
         coverflow.hide.push( {target:'scale.x',startposition:1,endposition:0.6,func:animator.linear} )
         coverflow.hide.push( {target:'scale.y',startposition:1,endposition:0.6,func:animator.linear} )
@@ -33,10 +36,10 @@
 
         container.contentsize = {width:container.size.width, height:container.size.height}
         container.inertia = 5
-        container.swipespeed = curlify.screenWidth
+        container.swipespeed = screenWidth
         container.movespeed = 1.0
         container.movethreshold = 60
-        container.itemsize = curlify.screenWidth
+        container.itemsize = screenWidth
         container.transition = coverflow
         container.unload_distance = 1.0
         container.wrap = false
@@ -84,18 +87,18 @@
             instance.targetposition.x=instance.position.x
             instance.targetposition.y=instance.position.y
           }
-          instance.pressOffset = {x:instance.targetposition.x-(x*container.movespeed)/curlify.screenWidth*2,y:instance.targetposition.y-y*container.movespeed}
+          instance.pressOffset = {x:instance.targetposition.x-(x*container.movespeed)/screenWidth*2,y:instance.targetposition.y-y*container.movespeed}
           container.pressStarted = {x:x,y:y}
               
         }
 
         container.focusdrag = function(x,y) {
-          var newx = instance.pressOffset.x+(x*container.movespeed)/curlify.screenWidth*2
-          var newy = instance.pressOffset.y+(y*container.movespeed)/curlify.screenHeight*2
+          var newx = instance.pressOffset.x+(x*container.movespeed)/screenWidth*2
+          var newy = instance.pressOffset.y+(y*container.movespeed)/screenHeight*2
           var diffx = container.pressStarted.x-x
           var diffy = container.pressStarted.y-y
 
-          //console.log("focusdrag",container.identifier,diffx,container.movethreshold/curlify.screenWidth,instance.moving)
+          //console.log("focusdrag",container.identifier,diffx,container.movethreshold/screenWidth,instance.moving)
           if ((container.alwaysmove || container.contentsize.width != container.size.width) && Math.abs(diffx) > container.movethreshold) instance.setMoving(diffx,diffy)
 
           if (instance.moving) {
@@ -211,7 +214,7 @@
         }
 
         container.getDistance = function() {
-          var dist = (instance.position.x*container.itemsize+(this.itemposition*container.itemsize)) / curlify.screenWidth
+          var dist = (instance.position.x*container.itemsize+(this.itemposition*container.itemsize)) / screenWidth
           return dist
         }
 

@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-  
+
   var image = (function() {
 
     console.log("initialize image module")
@@ -11,16 +11,19 @@
 
     return {
       loadImage : function(source) {
+
+        var zipfile = curlify.localVars.zipfile
+
         var image = null
         if ( typeof(source) != "string" ) {
           console.log("ERROR: image.loadImage source is not of type string",source)
           return null
         }
-        //console.log("image.new(",source,")",curlify.zipfile)
+        //console.log("image.new(",source,")",zipfile)
         image = new Image() //curlify.addImageElement()
-        if (curlify.zipfile != null) {
-          console.log("image.source zip",zipEntry,source,curlify.zipfile)
-          var zipEntry = curlify.zipfile.file(source)
+        if (zipfile != null) {
+          var zipEntry = zipfile.file(source)
+          console.log("image.source zip",zipEntry,source,zipfile)
           image.src = 'data:image/jpg;base64,' + JSZip.base64.encode(zipEntry.asBinary())
         } else {
           //console.log("image source file")
@@ -32,7 +35,7 @@
 
       new : function(source,geometry) {
 
-        var gl = curlify.gl
+        var gl = curlify.localVars.gl
 
         var instance = (geometry ? geometry : quad.new("image : "+source))
 

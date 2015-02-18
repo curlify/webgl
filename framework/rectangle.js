@@ -1,6 +1,6 @@
 
 (function() {
-  
+
   var curlify = document.currentScript.curlify
 
   var rectangle = (function(){
@@ -48,15 +48,18 @@
             type: 'x-shader/x-fragment'
           }
 
-          var vertexShader = glutils.createShader(curlify.gl, vertex)
-          var fragmentShader = glutils.createShader(curlify.gl, fragment)
-          this.glProgram = glutils.loadProgram(curlify.gl, [vertexShader, fragmentShader], ["a_position"], ["u_red", "u_green", "u_blue", "u_alpha","u_model","u_view","u_projection"]);
+          var gl = curlify.localVars.gl
+
+          var vertexShader = glutils.createShader(gl, vertex)
+          var fragmentShader = glutils.createShader(gl, fragment)
+          this.glProgram = glutils.loadProgram(gl, [vertexShader, fragmentShader], ["a_position"], ["u_red", "u_green", "u_blue", "u_alpha","u_model","u_view","u_projection"]);
         }
       },
 
       new : function(width,height,color) {
 
-        var gl = curlify.gl
+        var gl = curlify.localVars.gl
+
         var instance = quad.new("rectangle",width,height);
 
         instance.glProgram = this.default_program.getProgram()

@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-  
+
   var quad = (function() {
 
     console.log("initialize quad module")
@@ -56,20 +56,23 @@
             type: "x-shader/x-fragment"
           }
 
-          var vertexShader = glutils.createShader(curlify.gl, vertex)
-          var fragmentShader = glutils.createShader(curlify.gl, fragment)
+          var gl = curlify.localVars.gl
 
-          this.glProgram = glutils.loadProgram(curlify.gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_model","u_view","u_projection"]);
+          var vertexShader = glutils.createShader(gl, vertex)
+          var fragmentShader = glutils.createShader(gl, fragment)
+
+          this.glProgram = glutils.loadProgram(gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_model","u_view","u_projection"]);
 
         }
       },
 
       new : function(ident,width,height) {
 
-        var gl = curlify.gl
+        var gl = curlify.localVars.gl
+        var screenWidth = curlify.localVars.screenWidth
 
         if (this.buffer == null) {
-          this.buffer = curlify.gl.createBuffer();
+          this.buffer = gl.createBuffer();
           this.buffer.itemSize = 2;
           this.buffer.numItems = 4;
 
@@ -92,7 +95,7 @@
           var modelMatrix = this.modelMatrix;
           mat4.copy(modelMatrix,this.identityMatrix);
           if (this.position.x != 0 || this.position.y != 0 || this.position.z != 0) {
-            var translateScale = curlify.screenWidth/(this.translateScale*2)
+            var translateScale = screenWidth/(this.translateScale*2)
             mat4.translate(modelMatrix,modelMatrix,vec3.clone([this.position.x/translateScale,-this.position.y/translateScale,this.position.z/translateScale]) );
           }
           if (this.rotate.z != 0) mat4.rotateZ(modelMatrix,modelMatrix,-this.rotate.z);
@@ -103,7 +106,7 @@
           this.modelMatrix = modelMatrix;
           mat4.copy(this.quadModelMatrix,this.modelMatrix);
 
-          var multiplier = curlify.screenWidth/this.translateScale;
+          var multiplier = screenWidth/this.translateScale;
           mat4.scale(this.quadModelMatrix,this.quadModelMatrix,vec3.clone([(this.size.width)/multiplier,(-this.size.height)/multiplier,1]));
         };
 

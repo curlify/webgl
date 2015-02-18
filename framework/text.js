@@ -46,7 +46,7 @@ function createMultilineText(ctx, textToWrite, maxWidth, text) {
 
 var text = function(txt,fontsize,fontface,color,w,h) {
 
-  var w = w ? w : curlify.screenWidth
+  var w = w ? w : screenWidth
 
   var instance = quad.new("text : "+txt+" : "+w+","+h);
   console.log("NEW TEXT: "+instance.identifier)

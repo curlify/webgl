@@ -11,18 +11,21 @@
     return {
       new : function(ident,width,height) {
 
+        var screenWidth = curlify.localVars.screenWidth
+        var screenHeight = curlify.localVars.screenHeight
+        
         var move_in = { name:"move in", show:[], hide:[] }
-        move_in.show.push( {target:'position.y',startposition:curlify.screenHeight,endposition:0,func:animator.outQuad} )
+        move_in.show.push( {target:'position.y',startposition:screenHeight,endposition:0,func:animator.outQuad} )
         move_in.show.push( {target:'alpha',startposition:0,endposition:1,func:animator.outExpo} )
         move_in.hide.push( {target:'position.y',startposition:0,endposition:0,func:animator.linear} )
         move_in.hide.push( {target:'alpha',startposition:1,endposition:0,func:animator.inExpo} )
 
         var instance = carousel.new(ident,width,height);
-        instance.itemsize = curlify.screenHeight
+        instance.itemsize = screenHeight
         instance.transition = move_in
 
         instance.getDistance = function() {
-          var dist = (instance.instance.position.y*instance.itemsize+(this.itemposition*instance.itemsize)) / curlify.screenHeight
+          var dist = (instance.instance.position.y*instance.itemsize+(this.itemposition*instance.itemsize)) / screenHeight
           return dist
         }
 
@@ -42,13 +45,13 @@
             instance.instance.targetposition.y=instance.instance.position.y
           }
           
-          instance.instance.pressOffset = {x:instance.instance.targetposition.x-(x*instance.movespeed)/curlify.screenWidth*2,y:instance.instance.targetposition.y-(y*instance.movespeed)/curlify.screenHeight*2}
+          instance.instance.pressOffset = {x:instance.instance.targetposition.x-(x*instance.movespeed)/screenWidth*2,y:instance.instance.targetposition.y-(y*instance.movespeed)/screenHeight*2}
           instance.pressStarted = {x:x,y:y}
         }
 
         instance.focusdrag = function(x,y) {
-          var newx = instance.instance.pressOffset.x+(x*instance.movespeed)/curlify.screenWidth*2
-          var newy = instance.instance.pressOffset.y+(y*instance.movespeed)/curlify.screenHeight*2
+          var newx = instance.instance.pressOffset.x+(x*instance.movespeed)/screenWidth*2
+          var newy = instance.instance.pressOffset.y+(y*instance.movespeed)/screenHeight*2
           var diffx = instance.pressStarted.x-x
           var diffy = instance.pressStarted.y-y
 

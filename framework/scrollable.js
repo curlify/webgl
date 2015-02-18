@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-  
+
   var scene = curlify.getModule("scene")
   var animator = curlify.getModule("animator")
   var object = curlify.getModule("object")
@@ -11,16 +11,20 @@
   var scrollable = (function(){
     return {
       new : function(ident,width,height) {
+
+        var screenWidth = curlify.localVars.screenWidth
+        var screenHeight = curlify.localVars.screenHeight
+
         var container = focusable.new(ident,width,height)
 
         container.contentsize = {width:container.size.width,height:container.size.height}
         container.movespeed = 1.0
         container.movethreshold = 40
-        container.swipespeed = (curlify.screenWidth+curlify.screenHeight)/2 * 5
+        container.swipespeed = (screenWidth+screenHeight)/2 * 5
         container.maxspeed = 200
         container.inertia = 7
         container.zeroposition = 0
-        container.loaddistance = curlify.screenHeight
+        container.loaddistance = screenHeight
         container.visibledistance = container.loaddistance
         container.itempad = 0
         container.centerslots = false
@@ -72,8 +76,8 @@
 
         container.centeronslots = function() {
           if (container.centerslots) {
-            var sel = Math.floor((container.selected() / (curlify.screenWidth+container.itempad)))
-            container.movetox(sel*(curlify.screenWidth+container.itempad)+curlify.screenWidth/2)
+            var sel = Math.floor((container.selected() / (screenWidth+container.itempad)))
+            container.movetox(sel*(screenWidth+container.itempad)+screenWidth/2)
           }
         }
 
@@ -162,8 +166,8 @@
           }
         }
 
-        var limitx = curlify.screenWidth*4
-        var limity = curlify.screenHeight*4
+        var limitx = screenWidth*4
+        var limity = screenHeight*4
         var l2=-limitx
         var r2=limitx
         var t2=-limity

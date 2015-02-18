@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-  
+
   var fbo_object = (function() {
 
     console.log("initialize fbo_object module")
@@ -56,15 +56,18 @@
             type: "x-shader/x-fragment"
           }
 
-          var vertexShader = glutils.createShader(curlify.gl, vertex)
-          var fragmentShader = glutils.createShader(curlify.gl, fragment)
+          var gl = curlify.localVars.gl
 
-          this.glProgram = glutils.loadProgram(curlify.gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_model","u_view","u_projection"]);
+          var vertexShader = glutils.createShader(gl, vertex)
+          var fragmentShader = glutils.createShader(gl, fragment)
+
+          this.glProgram = glutils.loadProgram(gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_model","u_view","u_projection"]);
         }
       },      
 
       new : function(identifier,w,h,disable_alpha) {
-        var gl = curlify.gl
+
+        var gl = curlify.localVars.gl
 
         var instance = quad.new("fbo_object : "+identifier,w,h);
 
@@ -112,36 +115,36 @@
           gl.bindTexture(gl.TEXTURE_2D, null);
           var previousframebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING)
 
-          var previousscreenWidth = curlify.screenWidth
-          var previousscreenHeight = curlify.screenHeight
-          var previouslayoutwidth = curlify.layoutWidth
-          var previouslayoutheight = curlify.layoutHeight
-          var previouslayoutoffset = {x:curlify.layoutOffset.x,y:curlify.layoutOffset.y}
+          var previousscreenWidth = curlify.localVars.screenWidth
+          var previousscreenHeight = curlify.localVars.screenHeight
+          var previouslayoutwidth = curlify.localVars.layoutWidth
+          var previouslayoutheight = curlify.localVars.layoutHeight
+          var previouslayoutoffset = {x:curlify.localVars.layoutOffset.x,y:curlify.localVars.layoutOffset.y}
 
           gl.viewport(0, 0, instance.size.width, instance.size.height)
           gl.bindFramebuffer(gl.FRAMEBUFFER, instance.framebuffer);
           gl.clearColor(0.0, 0.0, 0.0, 0.0);
           gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
 
-          curlify.screenWidth = instance.size.width
-          curlify.screenHeight = instance.size.height
-          curlify.layoutWidth = instance.size.width
-          curlify.layoutHeight = instance.size.height
-          curlify.layoutOffset = {x:0,y:0}
+          curlify.localVars.screenWidth = instance.size.width
+          curlify.localVars.screenHeight = instance.size.height
+          curlify.localVars.layoutWidth = instance.size.width
+          curlify.localVars.layoutHeight = instance.size.height
+          curlify.localVars.layoutOffset = {x:0,y:0}
 
           for (var i = 0; i < instance.children.length; i++) {
             instance.children[i].parent = null;
-            instance.children[i].viewMatrix = curlify.camera.viewMatrix
+            instance.children[i].viewMatrix = curlify.localVars.camera.viewMatrix
             instance.children[i].drawTree();
           };
 
-          curlify.screenWidth = previousscreenWidth
-          curlify.screenHeight = previousscreenHeight
-          curlify.layoutWidth = previouslayoutwidth
-          curlify.layoutHeight = previouslayoutheight
-          curlify.layoutOffset = previouslayoutoffset
+          curlify.localVars.screenWidth = previousscreenWidth
+          curlify.localVars.screenHeight = previousscreenHeight
+          curlify.localVars.layoutWidth = previouslayoutwidth
+          curlify.localVars.layoutHeight = previouslayoutheight
+          curlify.localVars.layoutOffset = previouslayoutoffset
 
-          gl.viewport(curlify.layoutOffset.x, curlify.layoutOffset.y, curlify.layoutWidth, curlify.layoutHeight)
+          gl.viewport(curlify.localVars.layoutOffset.x, curlify.localVars.layoutOffset.y, curlify.localVars.layoutWidth, curlify.localVars.layoutHeight)
           gl.bindFramebuffer(gl.FRAMEBUFFER, previousframebuffer);
 
           instance.lastUpdated = sys.timestamp()

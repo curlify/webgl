@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-  
+
   var object = (function() {
 
     console.log("initialize object module")
@@ -14,15 +14,15 @@
     return {
       new : function(ident,width,height) {
 
-        var gl = curlify.gl
-
+        eval(curlify.extract(curlify.localVars,"curlify.localVars"))
+        
         return {
 
           identifier : (ident == null ? "object identifier" : ident),
           position : {x:0, y:0, z:0},
           rotate : {x:0, y:0, z:0},
           scale : {x:1, y:1, z:1},
-          size : {width:(width == null ? curlify.screenWidth : width), height:(height == null ? curlify.screenHeight : height)},
+          size : {width:(width == null ? screenWidth : width), height:(height == null ? screenHeight : height)},
           children : [],
           active : true,
           visible : true,
@@ -32,11 +32,11 @@
           drawbackside : false,
           depthtest : false,
 
-          projectionMatrix : curlify.camera.projectionMatrix,
-          viewMatrix : curlify.camera.viewMatrix,
+          projectionMatrix : camera.projectionMatrix,
+          viewMatrix : camera.viewMatrix,
           modelMatrix : mat4.identity( mat4.create() ),
           modelViewMatrix : mat4.identity( mat4.create() ),
-          translateScale : curlify.camera.translateScale,
+          translateScale : camera.translateScale,
           identityMatrix : mat4.identity( mat4.create() ),
 
           anim : animator.new(),
@@ -54,7 +54,7 @@
             var modelMatrix = this.modelMatrix;
             mat4.copy(modelMatrix,this.identityMatrix);
             if (this.position.x != 0 || this.position.y != 0 || this.position.z != 0) {
-              var translateScale = curlify.screenWidth/(this.translateScale*2)
+              var translateScale = screenWidth/(this.translateScale*2)
               mat4.translate(modelMatrix,modelMatrix,vec3.clone([this.position.x/translateScale,-this.position.y/translateScale,this.position.z/translateScale]) );
             }
             if (this.rotate.z != 0) mat4.rotateZ(modelMatrix,modelMatrix,-this.rotate.z);
@@ -151,8 +151,8 @@
 
             var used = false
             if (this.relativePress != null) {
-              var relx = (x-curlify.screenWidth/2)-this.absolutex()
-              var rely = (y-curlify.screenHeight/2)-this.absolutey()
+              var relx = (x-screenWidth/2)-this.absolutex()
+              var rely = (y-screenHeight/2)-this.absolutey()
               used = this.relativePress(relx,rely)
             }
             if (this.absolutePress != null) used = this.absolutePress(x,y)
@@ -168,8 +168,8 @@
 
             var used = false
             if (this.relativeDrag != null) {
-              var relx = (x-curlify.screenWidth/2)-this.absolutex()
-              var rely = (y-curlify.screenHeight/2)-this.absolutey()
+              var relx = (x-screenWidth/2)-this.absolutex()
+              var rely = (y-screenHeight/2)-this.absolutey()
               used = this.relativeDrag(relx,rely)
             }
             if (this.absoluteDrag != null ) used = this.absoluteDrag(x,y)
@@ -185,8 +185,8 @@
 
             var used = false
             if (this.relativeRelease != null) {
-              var relx = (x-curlify.screenWidth/2)-this.absolutex()
-              var rely = (y-curlify.screenHeight/2)-this.absolutey()
+              var relx = (x-screenWidth/2)-this.absolutex()
+              var rely = (y-screenHeight/2)-this.absolutey()
               used = this.relativeRelease(relx,rely)
             }
             if (this.absoluteRelease != null) used = this.absoluteRelease(x,y)

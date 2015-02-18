@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-  
+
   var object = curlify.getModule("object")
   var quad = curlify.getModule("quad")
 
@@ -13,7 +13,9 @@
     return {
       new : function(ident,cols,rows,width,height) {
 
-        var gl = curlify.gl
+        var gl = curlify.localVars.gl
+        var screenWidth = curlify.localVars.screenWidth
+        var screenHeight = curlify.localVars.screenHeight
 
         var instance = object.new(ident,width,height);
 
@@ -71,7 +73,7 @@
           var modelMatrix = this.modelMatrix;
           mat4.copy(modelMatrix,this.identityMatrix);
           if (this.position.x != 0 || this.position.y != 0 || this.position.z != 0) {
-            var translateScale = curlify.screenWidth/(this.translateScale*2)
+            var translateScale = screenWidth/(this.translateScale*2)
             mat4.translate(modelMatrix,modelMatrix,vec3.clone([this.position.x/translateScale,-this.position.y/translateScale,this.position.z/translateScale]) );
           }
           if (this.rotate.z != 0) mat4.rotateZ(modelMatrix,modelMatrix,-this.rotate.z);
@@ -82,7 +84,7 @@
           this.modelMatrix = modelMatrix;
           mat4.copy(this.quadModelMatrix,this.modelMatrix);
 
-          var multiplier = curlify.screenWidth/this.translateScale;
+          var multiplier = screenWidth/this.translateScale;
           mat4.scale(this.quadModelMatrix,this.quadModelMatrix,vec3.clone([(this.size.width)/multiplier,(-this.size.height)/multiplier*1/ysize,1]));
         };
 

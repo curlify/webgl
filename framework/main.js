@@ -2,12 +2,15 @@
 (function() {
 
   console.log("inititalize main")
+
   var currentScript = document.currentScript
   var curlify = document.currentScript.curlify
 
-  var revision = "3"
+  var revision = "4"
 
-  var scene = curlify.getModule("scene")
+  // evil extraction of all modules to local variables so that scripts have 'object' etc. defined already
+  eval(curlify.extract(curlify.modules,"curlify.modules"))
+  eval(curlify.extract(curlify.localVars,"curlify.localVars"))
 
   var glcanvas;
   var aspectratioZoom = true
@@ -16,25 +19,6 @@
   var imageid = 0
   var running = false
   var appendedElements = []
-
-
-  // PUBLIC MEMBERS
-  curlify.sensors = {acceleration:null,rotation:null,orientation:null}
-  curlify.zipfile = null
-  curlify.layoutWidth = null
-  curlify.layoutHeight = null
-  curlify.layoutOffset = {x:0,y:0}
-  curlify.layoutScale = {x:1,y:1}
-
-  curlify.gl = null
-  curlify.camera = null
-
-  curlify.viewWidth = null
-  curlify.viewHeight = null
-
-  curlify.screenWidth = null
-  curlify.screenHeight = null
-
 
 
   // PRIVATE FUNCTIONS
@@ -61,35 +45,35 @@
   };
 
   function initWebGL(canvas) {
-    curlify.gl = null;
+    gl = null;
     
     try {
       // Try to grab the standard context. If it fails, fallback to experimental.
-      curlify.gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     }
     catch(e) {}
     
-    //var sharedResourcesExtension = curlify.gl.getExtension("WEBGL_shared_resources");
+    //var sharedResourcesExtension = gl.getExtension("WEBGL_shared_resources");
     //console.log("shared",sharedResourcesExtension)
 
     // If we don't have a GL context, give up now
-    if (!curlify.gl) {
+    if (!gl) {
       console.log("ERROR: Unable to initialize WebGL in target node");
-      curlify.gl = null;
+      gl = null;
     }
-    
-    return curlify.gl;
+
+    return gl;
   }
 
   function mousedown(e) {
     if (scene.isAnimating() || touch == true) return
-    console.log("mousedown : "+e.clientX+","+e.clientY,curlify.layoutOffset.x,curlify.layoutOffset.y)
+    console.log("mousedown : "+e.clientX+","+e.clientY,layoutOffset.x,layoutOffset.y)
     var tgt = e.currentTarget.getBoundingClientRect()
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.clientX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
-    target.drag((e.clientX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
+    target.press((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
+    target.drag((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
   }
 
   function mouseup(e) {
@@ -100,11 +84,11 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release((e.clientX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
+    target.release((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
   }
 
   function mouseout(e) {
-    //console.log("mouseout : "+e.clientX+","+e.clientY)
+    console.log("mouseout : "+e.clientX+","+e.clientY)
     if (touch) mouseup(e)
   }
 
@@ -115,7 +99,7 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.clientX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.clientY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
+      target.drag((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
     }
   }
 
@@ -126,8 +110,8 @@
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.touches[0].pageX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
-    target.drag((e.touches[0].pageX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
+    target.press((e.touches[0].pageX-tgt.left-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-layoutOffset.y)*layoutScale.y)
+    target.drag((e.touches[0].pageX-tgt.left-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-layoutOffset.y)*layoutScale.y)
     lasttouch = e
   }
 
@@ -139,7 +123,7 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release(lasttouch.touches[0].pageX-tgt.left-curlify.layoutOffset.x,lasttouch.touches[0].pageY-tgt.top-curlify.layoutOffset.y)
+    target.release(lasttouch.touches[0].pageX-tgt.left-layoutOffset.x,lasttouch.touches[0].pageY-tgt.top-layoutOffset.y)
   }
 
   function touchmove(e) {
@@ -150,20 +134,20 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.touches[0].pageX-tgt.left-curlify.layoutOffset.x)*curlify.layoutScale.x,(e.touches[0].pageY-tgt.top-curlify.layoutOffset.y)*curlify.layoutScale.y)
+      target.drag((e.touches[0].pageX-tgt.left-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-layoutOffset.y)*layoutScale.y)
     }
     lasttouch = e
   }
 
   function deviceMotionHandler(e) {
     // Grab the acceleration from the results
-    curlify.sensors.acceleration = e.acceleration;
+    sensors.acceleration = e.acceleration;
     // Grab the rotation rate from the results
-    curlify.sensors.rotation = e.rotationRate;
+    sensors.rotation = e.rotationRate;
   }
 
   function deviceOrientationHandler(e) {
-    curlify.sensors.orientation = e;
+    sensors.orientation = e;
   }
 
   function orientationChanged() {
@@ -171,44 +155,54 @@
   }
 
   function resizeCanvas() {
-     // only change the size of the canvas if the size it's being displayed
-     // has changed.
-     var width = glcanvas.clientWidth;
-     var height = glcanvas.clientHeight;
-     if (glcanvas.width != width ||
-         glcanvas.height != height) {
+    // only change the size of the canvas if the size it's being displayed
+    // has changed.
+    var width = glcanvas.clientWidth;
+    var height = glcanvas.clientHeight;
+    if (glcanvas.width != width ||
+       glcanvas.height != height) {
 
-       curlify.layoutWidth = width
-       curlify.layoutHeight = height
-       curlify.layoutScale = {x: curlify.screenWidth/curlify.layoutWidth, y:curlify.screenHeight/curlify.layoutHeight}
+      layoutWidth = width
+      layoutHeight = height
+      layoutScale = {x: screenWidth/layoutWidth, y:screenHeight/layoutHeight}
 
-       curlify.viewWidth = curlify.screenWidth
-       curlify.viewHeight = curlify.screenHeight
+      viewWidth = screenWidth
+      viewHeight = screenHeight
 
-       var usescale = Math.max( curlify.layoutScale.x, curlify.layoutScale.y )
-       if (aspectratioZoom) {
-         usescale = Math.min( curlify.layoutScale.x, curlify.layoutScale.y )
+      var usescale = Math.max( layoutScale.x, layoutScale.y )
+      if (aspectratioZoom) {
+       usescale = Math.min( layoutScale.x, layoutScale.y )
 
-         curlify.viewWidth = width*usescale
-         curlify.viewHeight = height*usescale
-       }
-       curlify.layoutScale.x = usescale
-       curlify.layoutScale.y = usescale
+       viewWidth = width*usescale
+       viewHeight = height*usescale
+      }
+      layoutScale.x = usescale
+      layoutScale.y = usescale
 
-       curlify.layoutWidth = Math.floor(curlify.screenWidth*(1/usescale))
-       curlify.layoutHeight = Math.floor(curlify.screenHeight*(1/usescale))
+      layoutWidth = Math.floor(screenWidth*(1/usescale))
+      layoutHeight = Math.floor(screenHeight*(1/usescale))
 
-       curlify.layoutOffset.x = (width-curlify.layoutWidth)/2,
-       curlify.layoutOffset.y = (height-curlify.layoutHeight)/2
+      layoutOffset.x = (width-layoutWidth)/2,
+      layoutOffset.y = (height-layoutHeight)/2
 
-       glcanvas.width = glcanvas.clientWidth
-       glcanvas.height = glcanvas.clientHeight
+      glcanvas.width = glcanvas.clientWidth
+      glcanvas.height = glcanvas.clientHeight
 
-       //console.log("resized",glcanvas.width,glcanvas.height,viewWidth,curlify.viewHeight)
+      //console.log("resized",glcanvas.width,glcanvas.height,viewWidth,viewHeight)
+      curlify.localVars.layoutWidth = layoutWidth
+      curlify.localVars.layoutHeight = layoutHeight
+      curlify.localVars.layoutScale = layoutScale
+      curlify.localVars.layoutOffset = layoutOffset
 
-     }
+      curlify.localVars.viewWidth = viewWidth
+      curlify.localVars.viewHeight = viewHeight
 
-     //console.log("resizeCanvas",glcanvas.clientWidth,glcanvas.clientHeight,curlify.screenWidth,curlify.screenHeight,glcanvas.width,glcanvas.height)
+      curlify.localVars.screenWidth = screenWidth
+      curlify.localVars.screenHeight = screenHeight
+
+    }
+
+    //console.log("resizeCanvas",glcanvas.clientWidth,glcanvas.clientHeight,screenWidth,screenHeight,glcanvas.width,glcanvas.height)
 
   }
 
@@ -228,6 +222,11 @@
     }
     return obj1;
   }
+
+  function getRandom(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+  }
+
 
   // PUBLIC FUNCTIONS
 
@@ -286,10 +285,12 @@
               reject(Error("require zip load failed for '"+script+"' with '"+err+"'"))
               return
             }
-            curlify.zipfile = new JSZip(data);
-            var adscriptfile = curlify.zipfile.file("main.js")
+            zipfile = new JSZip(data);
+            curlify.localVars.zipfile = zipfile
+            var adscriptfile = zipfile.file("main.js")
             if (adscriptfile == null) {
-              curlify.zipfile = null
+              zipfile = null
+              curlify.localVars.zipfile = null
               reject(Error("require failed for '"+script+"' with 'main.js not found inside zip'"))
               return
             }
@@ -297,12 +298,13 @@
             try {
               scriptobject = eval(adscriptfile.asText())
             } catch (e) {
-              curlify.zipfile = null
+              zipfile = null
+              curlify.localVars.zipfile = null
               reject(Error("require eval failed for zip '"+script+"' with '"+e+"'"))
               return
             }
             resolve(scriptobject)
-            //curlify.zipfile = null
+            //zipfile = null
           })
 
         // .js file
@@ -400,20 +402,14 @@
     })
   }
 
-  curlify.getRandom = function(min, max) {
-    return Math.floor(Math.random() * (max - min) + min);
-  }
-
   curlify.render = function() {
-    var gl = curlify.gl
-
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE)
     gl.cullFace(gl.FRONT);
 
-    gl.viewport(curlify.layoutOffset.x, curlify.layoutOffset.y, curlify.layoutWidth, curlify.layoutHeight)
+    gl.viewport(layoutOffset.x, layoutOffset.y, layoutWidth, layoutHeight)
     
     scene.render()
   }
@@ -439,6 +435,7 @@
       glcanvas.removeEventListener("mousedown", mousedown, false);
       glcanvas.removeEventListener("mousemove", mousemove, false);
       glcanvas.removeEventListener("mouseup", mouseup, false);
+      glcanvas.removeEventListener ("mouseout", mouseout, false);
     }
 
     if (window.DeviceMotionEvent) {
@@ -483,19 +480,21 @@
     }
     curlify.assert( parameters.script != null )
 
-    curlify.screenWidth = (parameters.width ? parameters.width : 480)
-    curlify.screenHeight = (parameters.height ? parameters.height : 852)
+    screenWidth = (parameters.width ? parameters.width : 480)
+    screenHeight = (parameters.height ? parameters.height : 852)
 
     glcanvas = parameters.canvas ? document.getElementById(parameters.canvas) : currentScript.parentNode
+    curlify.localVars.glcanvas = glcanvas
 
     if (glcanvas == null) {
       parameters.canvas ? console.log("ERROR: cannot find canvas to draw on:",parameters.canvas) : console.log("ERROR: no canvas to draw to as parentNode:",glcanvas)
       return
     }
 
-    curlify.gl = initWebGL(glcanvas);
+    gl = initWebGL(glcanvas);
+    curlify.localVars.gl = gl
     // Only continue if WebGL is available and working  
-    if (curlify.gl == null) {
+    if (gl == null) {
       return
     }
 
@@ -509,11 +508,13 @@
       glcanvas.addEventListener("mousedown", mousedown, false);
       glcanvas.addEventListener("mousemove", mousemove, false);
       glcanvas.addEventListener("mouseup", mouseup, false);
+      glcanvas.addEventListener ("mouseout", mouseout, false);
     }
 
     resizeCanvas()
 
-    curlify.camera = createProjectionAndView(curlify.screenWidth,curlify.screenHeight,3,100);
+    camera = createProjectionAndView(screenWidth,screenHeight,3,100);
+    curlify.localVars.camera = camera
 
     if (window.DeviceMotionEvent) {
       window.addEventListener('devicemotion', deviceMotionHandler, false)
