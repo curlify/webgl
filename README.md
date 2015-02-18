@@ -4,7 +4,7 @@ WebGL framework
 <h4>Usage</h4>
 ```html
   <canvas style="width: 480;height: 200">
-    <script onload="this.curlify.start({script:'http://api.curlify.com/units/ads/1769/assets/dev.zip',renderInterval:1000/60})" type="text/javascript" src="../curlify.min.js"></script>
+    <script onload="this.curlify.start({script:'http://api.curlify.com/units/ads/1769/assets/dev.zip',renderInterval:1000/60})" type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script>
   </canvas>
 ```
 
