@@ -12,9 +12,9 @@ WebGL framework
 <h6>required</h6>
 <i>script:</i> url of zip or .js file to launch
 <h6>optional</h6>
+<i>width:</i> sets layout resolution width (screenWidth in scripts) - defaults to 480<br>
+<i>height:</i> sets layout resolution height (screenHeight in scripts) - defaults to 852<br>
 <i>canvas:</i> target canvas - defaults to document.currentScript.parentNode<br>
-<i>width:</i> sets layout resolution width (screenWidth)<br>
-<i>height:</i> sets layout resolution height (screenHeight)<br>
 <i>renderInterval:</i> interval for render calls to this script - defaults to no interval, ie. curlify.render must be called from somewhere else<br>
 
 <h4>Brief explanation</h4>
@@ -23,4 +23,5 @@ WebGL framework
 - main.js evals curlify.localVars and curlify.modules into local variable scope for scripts to use
 - main.js registers public methods (start, stop, render, setRenderInterval) which can be called from outside
 - curlify.start initializes webgl context, adds event listeners and requires initial script
+- curlify.render renders a frame of the current scene tree
 - curlify.stop removes event listeners, all scenes (running scripts), loaded dom elements (scripts), clears interval, clears module opengl buffers and loaded programs
