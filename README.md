@@ -23,4 +23,5 @@ WebGL framework
 - main.js evals curlify.localVars and curlify.modules into local variable scope for scripts to use
 - main.js registers public methods (start, stop, render, setRenderInterval) which can be called from outside
 - curlify.start initializes webgl context, adds event listeners and requires initial script
+- curlify.render renders a frame of the current scene tree
 - curlify.stop removes event listeners, all scenes (running scripts), loaded dom elements (scripts), clears interval, clears module opengl buffers and loaded programs
