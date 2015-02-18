@@ -10,10 +10,10 @@ WebGL framework
 
 <h4>curlify.start parameters</h4>
 <h6>required</h6>
-script: url of zip or .js file to launch
+<i>script:</i> url of zip or .js file to launch
 <h6>optional</h6>
-canvas: target canvas - defaults to document.currentScript.parentNode
-renderInterval: interval for render calls to this script - defaults to no interval, ie. curlify.render must be called from somewhere else
+<i>canvas:</i> target canvas - defaults to document.currentScript.parentNode<br>
+<i>renderInterval:</i> interval for render calls to this script - defaults to no interval, ie. curlify.render must be called from somewhere else<br>
 
 <h4>Brief explanation</h4>
 - curlify.js creates the module container into document.currentScript.curlify.
