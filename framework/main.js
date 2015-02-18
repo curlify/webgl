@@ -356,7 +356,7 @@
           document.head.appendChild(element);
           appendedElements.push(scriptid)
 
-          curlify.createCORSRequest('GET', script)
+          createCORSRequest('GET', script)
             .then( function(response)
             {
               try {
