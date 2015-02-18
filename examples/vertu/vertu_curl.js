@@ -1,22 +1,15 @@
 
 (function() {
 
-  var glutils = curlify.require("glutils")
-  var object = curlify.require("object")
-  var animator = curlify.require("animator")
-  var carousel = curlify.require("carousel")
-  var sys = curlify.require("sys")
-  var fps = curlify.require("fps")
-
   return {
     new : function() {
 
       var instance = object.new ("application")
 
       Promise.all([
-        curlify.require("cmsloader.js"),
-        curlify.require("vertuad.js"),
-        curlify.require("curled_image.js"),
+        require("cmsloader.js"),
+        require("vertuad.js"),
+        require("curled_image.js"),
         ]).then(function(requires){
 
           var cmsloader = requires[0]
@@ -25,7 +18,7 @@
 
           console.log(curled_image)
 
-          var feeds = [{url:"https://api.curlify.com/api/dev/app/a64130f6dc2570f1f6dc60c78bc32801/ads?id="+String(Math.random()), filename:"demos.json"}]
+          var feeds = [{url:"https://api.curlify.com/api/dev/app/9f648c3f885a88757baf7e4bd4867f00/ads?id="+String(Math.random()), filename:"demos.json"}]
           instance.cmsloader = cmsloader.new(feeds)
           
           var vertex = {
@@ -91,10 +84,10 @@
             type: "x-shader/x-fragment"
           }
           //initial + (final - initial) * pos
-          var vertexShader = glutils.createShader(curlify.gl, vertex)
-          var fragmentShader = glutils.createShader(curlify.gl, fragment)
+          var vertexShader = glutils.createShader(gl, vertex)
+          var fragmentShader = glutils.createShader(gl, fragment)
 
-          var inverse_curl_program = glutils.loadProgram(curlify.gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_shadow_color","u_model","u_view","u_projection","cylPos","N","R"]);
+          var inverse_curl_program = glutils.loadProgram(gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_shadow_color","u_model","u_view","u_projection","cylPos","N","R"]);
           
           instance.cmsloader.onload = function(json) {
             console.log("cmsloader.onload")
@@ -140,7 +133,7 @@
                   adpage.deactivate()
                 }
                 curl.relativePress = function(x,y){
-                  if ((y < curlify.viewHeight/3 || x < curlify.viewWidth/3) && (y>-curlify.viewHeight/3 || x > -curlify.viewWidth/3)) return
+                  if ((y < viewHeight/3 || x < viewWidth/3) && (y>-viewHeight/3 || x > -viewWidth/3)) return
                   curl.pressTimestamp = sys.timestamp()
 
                   if ( y > 0 ) {
@@ -148,7 +141,7 @@
                     scene.stealPointers(this)
                     curl.anim.stop()
 
-                    curl.pressStart.x = curlify.screenWidth/2
+                    curl.pressStart.x = screenWidth/2
                     curl.pressOffset.x = (x-curl.pointerPos.x)
                     curl.pressOffset.y = (y-curl.pointerPos.y)
                   } else {
@@ -167,7 +160,7 @@
                   console.log("TIME PRESSED",pressTime,sys.timestamp(),curl.pressTimestamp)
                   if ( stack.selected() < stack.itemcontainer.children.length && (curl.cylPos[0] < 0 || curl.cylPos[1] < 0 || pressTime < 200)) {
                     curl.anim.stop()
-                    curl.anim.animate( curl.pointerPos, {x:-curlify.screenWidth/2*1.5,y:-curlify.screenHeight/2*1.5,time:500,ease:animator.outQuad,onComplete:
+                    curl.anim.animate( curl.pointerPos, {x:-screenWidth/2*1.5,y:-screenHeight/2*1.5,time:500,ease:animator.outQuad,onComplete:
                       function() {
                         stack.moveto(stack.selected())
                       }

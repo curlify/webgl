@@ -1,11 +1,5 @@
 (function() {
 
-  var glutils = curlify.require("glutils")
-  var animator = curlify.require("animator")
-  var object = curlify.require("object")
-  var image = curlify.require("image")
-  var plane = curlify.require("plane")
-
   console.log("curled_image included")
 
   return {
@@ -78,16 +72,15 @@
           type: "x-shader/x-fragment"
         }
 
-        var vertexShader = glutils.createShader(curlify.gl, vertex)
-        var fragmentShader = glutils.createShader(curlify.gl, fragment)
+        var vertexShader = glutils.createShader(gl, vertex)
+        var fragmentShader = glutils.createShader(gl, fragment)
 
-        this.glProgram = glutils.loadProgram(curlify.gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_model","u_view","u_projection","cylPos","N","R"]);
+        this.glProgram = glutils.loadProgram(gl, [vertexShader, fragmentShader], ["a_position","a_tex_coordinate"], ["u_texture","u_alpha","u_model","u_view","u_projection","cylPos","N","R"]);
 
       }
     },
 
     new : function( source ) {
-      var gl = curlify.gl
 
       var curl = image.new(source,plane.new("curlable",15,15))
       curl.drawbackside = true
@@ -96,8 +89,8 @@
       curl.cylPos = [0,0]
       curl.cylDir = [0,0]
       curl.cylRad = 0.25
-      curl.pressStart = {x:curlify.screenWidth/2,y:curlify.screenHeight/2}
-      curl.pointerPos = {x:curlify.screenWidth/2,y:curlify.screenHeight/2}
+      curl.pressStart = {x:screenWidth/2,y:screenHeight/2}
+      curl.pointerPos = {x:screenWidth/2,y:screenHeight/2}
       curl.pressOffset = {x:0,y:0}
 
       curl.resetcurl = function(allowrandom) {
@@ -110,24 +103,24 @@
       curl.randomcurl = function() {
         //console.log("randomcurl")
         curl.anim.stop()
-        curl.pressStart = {x:curlify.screenWidth/2,y:curlify.screenHeight/2}
-        curl.pointerPos = {x:curlify.screenWidth/2,y:curlify.screenHeight/2}
-        curl.anim.animate( curl.pointerPos, {x:curlify.screenWidth/2-curlify.getRandom(90,100),y:curlify.screenHeight/2-curlify.getRandom(100,150),time:1000,ease:animator.inOutQuad,onComplete:curl.resetcurl})
+        curl.pressStart = {x:screenWidth/2,y:screenHeight/2}
+        curl.pointerPos = {x:screenWidth/2,y:screenHeight/2}
+        curl.anim.animate( curl.pointerPos, {x:screenWidth/2-getRandom(90,100),y:screenHeight/2-getRandom(100,150),time:1000,ease:animator.inOutQuad,onComplete:curl.resetcurl})
       }
       curl.step = function(timedelta) {
-        var x = Math.min(curlify.screenWidth/2,curl.pointerPos.x-curl.pressOffset.x)
-        var y = Math.min(curlify.screenHeight/2,curl.pointerPos.y-curl.pressOffset.y)
+        var x = Math.min(screenWidth/2,curl.pointerPos.x-curl.pressOffset.x)
+        var y = Math.min(screenHeight/2,curl.pointerPos.y-curl.pressOffset.y)
         this.cylPos = [ x/(this.size.width/2)*1.1,y/(this.size.height/2)*1.1 ]
         this.cylDir = [(x-this.pressStart.x) / this.size.width,(y-this.pressStart.y) / this.size.height,0]
         this.cylDir = vec3.normalize( this.cylDir,this.cylDir )
       }
 
       curl.relativePress = function(x,y){
-        if (y < curlify.screenHeight/3 || x < curlify.screenWidth/3) return
+        if (y < screenHeight/3 || x < screenWidth/3) return
         scene.stealPointers(this)
         curl.anim.stop()
 
-        curl.pressStart.x = curlify.screenWidth/2
+        curl.pressStart.x = screenWidth/2
         curl.pressOffset.x = (x-curl.pointerPos.x)
         curl.pressOffset.y = (y-curl.pointerPos.y)
       }

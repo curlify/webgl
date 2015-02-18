@@ -1,29 +1,21 @@
 
 (function() {
 
-  var object = curlify.require("object")
-  var fbo_object = curlify.require("fbo_object")
-  var masked_image = curlify.require("masked_image")
-  var rectangle = curlify.require("rectangle")
-  var animator = curlify.require("animator")
-  var carousel = curlify.require("carousel")
-  var fps = curlify.require("fps")
-
   return {
     new : function() {
 
       var instance = object.new ("application")
 
       Promise.all([
-        curlify.require("cmsloader.js"),
-        curlify.require("vertuad.js")]
+        require("cmsloader.js"),
+        require("vertuad.js")]
         )
         .then(function(requires) {
 
           var cmsloader = requires[0]
           var ad = requires[1]
 
-          var feeds = [{url:"https://api.curlify.com/api/dev/app/a64130f6dc2570f1f6dc60c78bc32801/ads?id="+String(Math.random()), filename:"demos.json"}]
+          var feeds = [{url:"https://api.curlify.com/api/dev/app/9f648c3f885a88757baf7e4bd4867f00/ads?id="+String(Math.random()), filename:"demos.json"}]
           instance.cmsloader = cmsloader.new(feeds)
           
           /*

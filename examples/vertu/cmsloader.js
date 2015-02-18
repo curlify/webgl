@@ -1,16 +1,10 @@
 
 (function() {
 
-  var object = curlify.require("object")
-
-  console.log("initialize cmsloader")
-
   return {
     new : function(feeds) {
 
       var instance = object.new("cms loader")
-
-      console.log("new instance of cmsloader")
 
       instance.feeds = feeds
       instance.feed = instance.feeds[0]
@@ -23,7 +17,7 @@
           return
         }
         
-        curlify.createCORSRequest('GET', feed.url).then(function(response){
+        createCORSRequest('GET', feed.url).then(function(response){
           var cmsJson = JSON.parse(response);
           if (instance.onload != null) instance.onload(cmsJson)
         },function(error){
