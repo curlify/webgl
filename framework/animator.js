@@ -37,8 +37,11 @@ var animator = (function() {
             var value = config[key]
             if (CONFIG_KEYS[key] == null) {
 
-              curlify.assert(target[key] != null, "Animated property cannot be initially nil : "+key)
-              init[key] = target[key]
+              if (target[key] == null) {
+                console.log("ERROR: Animated property cannot be initially nil : "+key)
+              } else {
+                init[key] = target[key]
+              }
             }
           }
 

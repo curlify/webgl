@@ -228,15 +228,7 @@
   }
 
 
-  // PUBLIC FUNCTIONS
-
-  curlify.assert = function(condition, message) {
-      if (!condition) {
-          throw message || "Assertion failed";
-      }
-  }
-
-  curlify.spawn = function(generatorFunc) {
+  function spawn(generatorFunc) {
     return function() {
       function continuer(verb, arg) {
         var result;
@@ -258,7 +250,54 @@
     }
   }
 
-  curlify.require = function(script) {
+  function createCORSRequest(method, url) {
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      if ("withCredentials" in xhr) {
+
+        // Check if the XMLHttpRequest object has a "withCredentials" property.
+        // "withCredentials" only exists on XMLHTTPRequest2 objects.
+        xhr.open(method, url, true);
+
+      } else if (typeof XDomainRequest != "undefined") {
+
+        // Otherwise, check if XDomainRequest.
+        // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+        xhr = new XDomainRequest();
+        xhr.open(method, url);
+
+      } else {
+
+        // Otherwise, CORS is not supported by the browser.
+        xhr = null;
+        reject(Error("createCORSRequest failed with 'XMLHttpRequest not supported'"))
+        return
+      }
+
+      xhr.onload = function() {
+        // This is called even on 404 etc
+        // so check the status
+        if (xhr.status == 200) {
+          // Resolve the promise with the response text
+          resolve(xhr.response);
+        } else {
+          // Otherwise reject with the status text
+          // which will hopefully be a meaningful error
+          reject(Error("cors request failed with '"+xhr.statusText+"'"));
+        }
+      };
+
+      // Handle network errors
+      xhr.onerror = function() {
+        reject(Error("cors request failed with 'Network Error'"));
+      };  
+
+      xhr.send()      
+    })
+  }
+
+
+  function require(script) {
     //console.log("require(",script,")")
 
     // check for internal framework module and instantly return for easier syntax
@@ -344,6 +383,7 @@
     })
   }
 
+  // unused - explore this instead of Image.new() in image.js etc
   curlify.addImageElement = function() {
     var elementid = "curlify_image_"+imageid
 
@@ -356,51 +396,7 @@
     return element
   }
 
-  curlify.createCORSRequest = function(method, url) {
-    return new Promise(function(resolve, reject) {
-      var xhr = new XMLHttpRequest();
-      if ("withCredentials" in xhr) {
-
-        // Check if the XMLHttpRequest object has a "withCredentials" property.
-        // "withCredentials" only exists on XMLHTTPRequest2 objects.
-        xhr.open(method, url, true);
-
-      } else if (typeof XDomainRequest != "undefined") {
-
-        // Otherwise, check if XDomainRequest.
-        // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
-        xhr = new XDomainRequest();
-        xhr.open(method, url);
-
-      } else {
-
-        // Otherwise, CORS is not supported by the browser.
-        xhr = null;
-        reject(Error("createCORSRequest failed with 'XMLHttpRequest not supported'"))
-        return
-      }
-
-      xhr.onload = function() {
-        // This is called even on 404 etc
-        // so check the status
-        if (xhr.status == 200) {
-          // Resolve the promise with the response text
-          resolve(xhr.response);
-        } else {
-          // Otherwise reject with the status text
-          // which will hopefully be a meaningful error
-          reject(Error("cors request failed with '"+xhr.statusText+"'"));
-        }
-      };
-
-      // Handle network errors
-      xhr.onerror = function() {
-        reject(Error("cors request failed with 'Network Error'"));
-      };  
-
-      xhr.send()      
-    })
-  }
+  // PUBLIC FUNCTIONS
 
   curlify.render = function() {
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -478,7 +474,6 @@
       console.log("ERROR: no script source set")
       return
     }
-    curlify.assert( parameters.script != null )
 
     screenWidth = (parameters.width ? parameters.width : 480)
     screenHeight = (parameters.height ? parameters.height : 852)
@@ -529,7 +524,7 @@
 
     window.addEventListener('orientationchange', orientationChanged);
     
-    curlify.require( parameters.script )
+    require( parameters.script )
       .then( function(scriptobject)
       {
         scene.openScene( scriptobject.new() )
