@@ -362,7 +362,7 @@
               try {
                 element.scriptobject = eval(response)
               } catch (e) {
-                reject(Error("require eval failed for '"+script+"' with '"+e+"'"))
+                reject(Error("require eval failed for '"+script+"' with '"+e+"'",response))
                 return
               }
               resolve(element.scriptobject)
@@ -477,6 +477,10 @@
 
     screenWidth = (parameters.width ? parameters.width : 480)
     screenHeight = (parameters.height ? parameters.height : 852)
+    curlify.localVars.screenWidth = screenWidth
+    curlify.localVars.screenHeight = screenHeight
+
+    console.log("size",screenWidth,screenHeight)
 
     glcanvas = parameters.canvas ? document.getElementById(parameters.canvas) : currentScript.parentNode
     curlify.localVars.glcanvas = glcanvas
