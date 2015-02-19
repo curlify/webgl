@@ -25,4 +25,5 @@ framework/main.js \
 -o curlify.min.js \
 -m \
 -c \
---comments
+--comments \
+--screw-ie8
