@@ -3,9 +3,20 @@ WebGL framework
 
 <h4>Usage</h4>
 ```html
-  <canvas style="width: 480;height: 200">
-    <script onload="this.curlify.start({script:'http://api.curlify.com/units/ads/1769/assets/dev.zip',renderInterval:1000/60})" type="text/javascript" src="../curlify.min.js"></script>
-  </canvas>
+<html> 
+  <head>
+    <script type="text/javascript" src="http://curlify.io/dev/jszip.min.js"></script>
+    <script type="text/javascript" src="http://curlify.io/dev/jszip-utils.min.js"></script>
+    <script type="text/javascript" src="http://curlify.io/dev/gl-matrix-min.js"></script>
+  </head>
+
+  <body>
+    <canvas style="width: 480;height: 200">
+      <script onload="this.curlify.start({script:'http://api.curlify.com/units/ads/1773/assets/dev.zip',renderInterval:1000/60})" type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script>
+    </canvas>
+  </body>
+</html> 
+  
 ```
 
 <h4>curlify.start parameters</h4>
