@@ -1,4 +1,6 @@
-/*!
+/**
+@preserve
+
 Curlify - A javascript webgl framework
 <http://curlify.io>
 

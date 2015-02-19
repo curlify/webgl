@@ -1,4 +1,7 @@
 uglifyjs \
+jszip.min.js \
+jszip-utils.min.js \
+gl-matrix-min.js \
 framework/curlify.js \
 framework/glutils.js \
 framework/sys.js \
@@ -21,4 +24,5 @@ framework/scrollable.js \
 framework/main.js \
 -o curlify.min.js \
 -m \
--c
+-c \
+--comments
