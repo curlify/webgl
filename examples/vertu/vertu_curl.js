@@ -150,6 +150,7 @@
 
                     if (container.identifier == "page0") return
                     curl.resetcurl(false)
+
                     stack.moveto(stack.selected()-1)
 
                   }
@@ -160,7 +161,7 @@
                   console.log("TIME PRESSED",pressTime,sys.timestamp(),curl.pressTimestamp)
                   if ( stack.selected() < stack.itemcontainer.children.length && (curl.cylPos[0] < 0 || curl.cylPos[1] < 0 || pressTime < 200)) {
                     curl.anim.stop()
-                    curl.anim.animate( curl.pointerPos, {x:-screenWidth/2*1.5,y:-screenHeight/2*1.5,time:500,ease:animator.outQuad,onComplete:
+                    curl.anim.animate( curl.pointerPos, {x:-screenWidth/2*1.5,y:-screenHeight/2*1.5,time:2000,ease:animator.inOutQuad,onComplete:
                       function() {
                         stack.moveto(stack.selected())
                       }

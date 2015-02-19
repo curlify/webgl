@@ -97,8 +97,8 @@
         //console.log("resetcurl",allowrandom)
         var endfunc = (allowrandom == false ? null : curl.randomcurl)
         curl.anim.stop()
-        curl.anim.animate( curl.pointerPos, {x:curl.pressStart.x,y:curl.pressStart.y,time:1000,ease:animator.inOutQuad,onComplete:endfunc})
-        curl.anim.animate( curl.pressOffset, {x:0,y:0,time:1000,ease:animator.inOutQuad})
+        curl.anim.animate( curl.pointerPos, {x:curl.pressStart.x,y:curl.pressStart.y,time:1500,ease:animator.inOutQuad,onComplete:endfunc})
+        curl.anim.animate( curl.pressOffset, {x:0,y:0,time:1500,ease:animator.inOutQuad})
       }
       curl.randomcurl = function() {
         //console.log("randomcurl")
