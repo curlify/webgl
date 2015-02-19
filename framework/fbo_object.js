@@ -72,7 +72,7 @@
         var instance = quad.new("fbo_object : "+identifier,w,h);
 
         instance.glProgram = this.default_program.getProgram()
-        console.log("fbo_object.new(",instance.dentifier,instance.size.width,instance.size.height,")")
+        console.log("fbo_object.new(",instance.dentifier,instance.size.width,instance.size.height,curlify.localVars.screenWidth,curlify.localVars.screenHeight,")")
 
         instance.dobypassFbo = false
         instance.lastUpdated = -99999
@@ -131,6 +131,11 @@
           curlify.localVars.layoutWidth = instance.size.width
           curlify.localVars.layoutHeight = instance.size.height
           curlify.localVars.layoutOffset = {x:0,y:0}
+          screenWidth = curlify.localVars.screenWidth 
+          screenHeight = curlify.localVars.screenHeight
+          layoutWidth = curlify.localVars.layoutWidth 
+          layoutHeight = curlify.localVars.layoutHeight
+          layoutOffset = curlify.localVars.layoutOffset
 
           for (var i = 0; i < instance.children.length; i++) {
             instance.children[i].parent = null;
@@ -143,6 +148,11 @@
           curlify.localVars.layoutWidth = previouslayoutwidth
           curlify.localVars.layoutHeight = previouslayoutheight
           curlify.localVars.layoutOffset = previouslayoutoffset
+          screenWidth = curlify.localVars.screenWidth 
+          screenHeight = curlify.localVars.screenHeight
+          layoutWidth = curlify.localVars.layoutWidth 
+          layoutHeight = curlify.localVars.layoutHeight
+          layoutOffset = curlify.localVars.layoutOffset
 
           gl.viewport(curlify.localVars.layoutOffset.x, curlify.localVars.layoutOffset.y, curlify.localVars.layoutWidth, curlify.localVars.layoutHeight)
           gl.bindFramebuffer(gl.FRAMEBUFFER, previousframebuffer);

@@ -23,7 +23,7 @@
 
   // PRIVATE FUNCTIONS
   var createProjection = function(right, top, near, far) {
-    var m = mat4.create();
+    var m = mat4.clone([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
     m[0] = near/right
     m[5] = near/top
     m[10] = -(far + near)/(far - near)
@@ -36,7 +36,7 @@
     //var projectionMatrix = mat4.perspective( 120, h/w, near, far );
     var projectionMatrix = createProjection(1, h/w, near,far);
 
-    var viewMatrix = mat4.identity( mat4.create() );
+    var viewMatrix = mat4.create();
     mat4.translate( viewMatrix, viewMatrix, vec3.clone([0,0,-(far-near)/2]) );
     var quadToScreenScale = ((far-near)/2)/near;
 
@@ -67,7 +67,7 @@
 
   function mousedown(e) {
     if (scene.isAnimating() || touch == true) return
-    console.log("mousedown : "+e.clientX+","+e.clientY,layoutOffset.x,layoutOffset.y)
+    //console.log("mousedown : "+e.clientX+","+e.clientY,layoutOffset.x,layoutOffset.y)
     var tgt = e.currentTarget.getBoundingClientRect()
     touch = true
     var target = scene.getPointerUser()
@@ -79,7 +79,7 @@
   function mouseup(e) {
     scene.resetPointerStealer()
     if (scene.isAnimating() || touch == false) return
-    console.log("mouseup : "+e.clientX+","+e.clientY)
+    //console.log("mouseup : "+e.clientX+","+e.clientY)
     var tgt = e.currentTarget.getBoundingClientRect()
     touch = false
     var target = scene.getPointerUser()
@@ -88,7 +88,7 @@
   }
 
   function mouseout(e) {
-    console.log("mouseout : "+e.clientX+","+e.clientY)
+    //console.log("mouseout : "+e.clientX+","+e.clientY)
     if (touch) mouseup(e)
   }
 
@@ -157,6 +157,7 @@
   function resizeCanvas() {
     // only change the size of the canvas if the size it's being displayed
     // has changed.
+    //console.log("resizeCanvas",glcanvas)
     var width = glcanvas.clientWidth;
     var height = glcanvas.clientHeight;
     if (glcanvas.width != width ||
@@ -174,9 +175,7 @@
         usescale = Math.min( layoutScale.x, layoutScale.y )
         viewWidth = width*usescale
         viewHeight = height*usescale
-        console.log("using aspect ratio zoom",width,height,viewWidth,viewHeight,screenWidth,screenHeight)
-      } else {
-        console.log("using fit-to-page")
+        //console.log("using aspect ratio zoom",width,height,viewWidth,viewHeight,screenWidth,screenHeight)
       }
       layoutScale.x = usescale
       layoutScale.y = usescale
@@ -407,6 +406,7 @@
     gl.enable(gl.CULL_FACE)
     gl.cullFace(gl.FRONT);
 
+    //console.log(layoutOffset.x,layoutOffset.y,layoutWidth,layoutHeight)
     gl.viewport(layoutOffset.x, layoutOffset.y, layoutWidth, layoutHeight)
     
     scene.render()
@@ -482,8 +482,6 @@
     curlify.localVars.screenWidth = screenWidth
     curlify.localVars.screenHeight = screenHeight
 
-    console.log("screenSize",screenWidth,screenHeight)
-
     glcanvas = parameters.canvas ? document.getElementById(parameters.canvas) : currentScript.parentNode
     curlify.localVars.glcanvas = glcanvas
 
@@ -491,6 +489,8 @@
       parameters.canvas ? console.log("ERROR: cannot find canvas to draw on:",parameters.canvas) : console.log("ERROR: no canvas to draw to as parentNode:",glcanvas)
       return
     }
+
+    resizeCanvas()
 
     gl = initWebGL(glcanvas);
     curlify.localVars.gl = gl
@@ -511,8 +511,6 @@
       glcanvas.addEventListener("mouseup", mouseup, false);
       glcanvas.addEventListener ("mouseout", mouseout, false);
     }
-
-    resizeCanvas()
 
     camera = createProjectionAndView(screenWidth,screenHeight,3,100);
     curlify.localVars.camera = camera

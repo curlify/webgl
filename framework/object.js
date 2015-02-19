@@ -34,10 +34,10 @@
 
           projectionMatrix : camera.projectionMatrix,
           viewMatrix : camera.viewMatrix,
-          modelMatrix : mat4.identity( mat4.create() ),
-          modelViewMatrix : mat4.identity( mat4.create() ),
+          modelMatrix : mat4.create(),
+          modelViewMatrix : mat4.create(),
           translateScale : camera.translateScale,
-          identityMatrix : mat4.identity( mat4.create() ),
+          identityMatrix : mat4.create(),
 
           anim : animator.new(),
           timervalue : 0,
