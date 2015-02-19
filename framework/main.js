@@ -6,7 +6,7 @@
   var currentScript = document.currentScript
   var curlify = document.currentScript.curlify
 
-  var revision = "4"
+  var revision = "5"
 
   // evil extraction of all modules to local variables so that scripts have 'object' etc. defined already
   eval(curlify.extract(curlify.modules,"curlify.modules"))
@@ -72,8 +72,8 @@
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
-    target.drag((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
+    target.press((e.clientX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
+    target.drag((e.clientX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
   }
 
   function mouseup(e) {
@@ -84,7 +84,7 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
+    target.release((e.clientX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
   }
 
   function mouseout(e) {
@@ -99,7 +99,7 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
+      target.drag((e.clientX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
     }
   }
 
@@ -110,8 +110,8 @@
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.touches[0].pageX-tgt.left-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-layoutOffset.y)*layoutScale.y)
-    target.drag((e.touches[0].pageX-tgt.left-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-layoutOffset.y)*layoutScale.y)
+    target.press((e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
+    target.drag((e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
     lasttouch = e
   }
 
@@ -123,7 +123,7 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release(lasttouch.touches[0].pageX-tgt.left-layoutOffset.x,lasttouch.touches[0].pageY-tgt.top-layoutOffset.y)
+    target.release((lasttouch.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(lasttouch.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
   }
 
   function touchmove(e) {
@@ -134,7 +134,7 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.touches[0].pageX-tgt.left-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-layoutOffset.y)*layoutScale.y)
+      target.drag((e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
     }
     lasttouch = e
   }
@@ -171,10 +171,12 @@
 
       var usescale = Math.max( layoutScale.x, layoutScale.y )
       if (aspectratioZoom) {
-       usescale = Math.min( layoutScale.x, layoutScale.y )
-
-       viewWidth = width*usescale
-       viewHeight = height*usescale
+        usescale = Math.min( layoutScale.x, layoutScale.y )
+        viewWidth = width*usescale
+        viewHeight = height*usescale
+        console.log("using aspect ratio zoom",width,height,viewWidth,viewHeight,screenWidth,screenHeight)
+      } else {
+        console.log("using fit-to-page")
       }
       layoutScale.x = usescale
       layoutScale.y = usescale
@@ -465,7 +467,7 @@
 
   curlify.start = function(parameters) {
 
-    console.log("curlify.start - revision",revision)
+    console.log("curlify.start",parameters,revision)
 
     if ( running ) curlify.stop()
     running = true
@@ -480,7 +482,7 @@
     curlify.localVars.screenWidth = screenWidth
     curlify.localVars.screenHeight = screenHeight
 
-    console.log("size",screenWidth,screenHeight)
+    console.log("screenSize",screenWidth,screenHeight)
 
     glcanvas = parameters.canvas ? document.getElementById(parameters.canvas) : currentScript.parentNode
     curlify.localVars.glcanvas = glcanvas
