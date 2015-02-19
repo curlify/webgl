@@ -1,34 +1,41 @@
-<html> 
-  <head>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<style>
+body {
+   	background-image: url(bg.jpg);
+    	background-position:  	center top;
+   	background-size:   	cover;
+}
+</style> 
+<script type="text/javascript" src="https://curlify.io/dev/jszip.min.js"></script>
+<script type="text/javascript" src="https://curlify.io/dev/jszip-utils.min.js"></script>
+<script type="text/javascript" src="https://curlify.io/dev/gl-matrix-min.js"></script>
+</head> 
+<body> 
 
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<div style="padding: 10"> 
+<canvas style="width: 320; height: 200; box-shadow: 10px 10px 30px black ">
+<script onload="this.curlify.start({script:'https://api.curlify.com/units/ads/1776/assets/dev.zip',renderInterval:1000/60})" 
+type="text/javascript" src="https://curlify.io/dev/curlify.min.js"></script>
+</canvas>
+</div>
 
-    <style>
-      body, html { 
-        width: 100%;
-        height: 100%;
-        border: 0px;
-        padding: 0px;
-        margin: 0px;
-      }
-    </style>
+<div style="padding: 10">
+<canvas style="width: 320; height: 200; box-shadow: 10px 10px 30px black ">
+<script
+onload="this.curlify.start({script:'https://api.curlify.com/units/ads/1773/assets/dev.zip',renderInterval:1000/60})"
+type="text/javascript" src="../../curlify.min.js"></script>
+</canvas>
+</div>
 
-    <script type="text/javascript" src="http://curlify.io/dev/jszip.min.js"></script>
-    <script type="text/javascript" src="http://curlify.io/dev/jszip-utils.min.js"></script>
-    <script type="text/javascript" src="http://curlify.io/dev/gl-matrix-min.js"></script>
-  </head>
+<div style="padding: 10">
+<canvas style="width: 320; height: 200; box-shadow: 10px 10px 30px black ">
+<script
+onload="this.curlify.start({script:'https://api.curlify.com/units/ads/1771/assets/dev.zip',renderInterval:1000/60})"
+type="text/javascript" src="https://curlify.io/dev/curlify.min.js"></script>
+</canvas>
+</div>
 
-  <body>
-    <img src="back_from_ad.png">
-    <img src="loadwheel.png">
-    <canvas style="width: 200;height: 200">
-      <script onload="this.curlify.start({script:'http://api.curlify.com/units/ads/1767/assets/dev.zip',renderInterval:1000/60})" type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script>
-    </canvas>
-    <img src="back_from_ad.png">
-    <img src="loadwheel.png">
-    <canvas style="width: 480;height: 200">
-      <script onload="this.curlify.start({script:'http://api.curlify.com/units/ads/1769/assets/dev.zip',renderInterval:1000/60})" type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script>
-    </canvas>
-  </body>
-
+</body>
 </html>
