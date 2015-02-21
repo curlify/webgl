@@ -407,6 +407,8 @@
 
   curlify.render = function() {
 
+    if (running == false) return
+
     window.requestAnimationFrame( curlify.render )
 
     if ( document.hidden || isElementInViewport( glcanvas ) == false ) return
