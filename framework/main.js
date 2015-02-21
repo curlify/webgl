@@ -12,10 +12,10 @@
   eval(curlify.extract(curlify.modules,"curlify.modules"))
   eval(curlify.extract(curlify.localVars,"curlify.localVars"))
 
-  var glcanvas;
+  var glcanvas
   var aspectratioZoom = true
-  var touch = false;
-  var lasttouch = null;
+  var touch = false
+  var lasttouch = null
   var imageid = 0
   var running = false
   var appendedElements = []
@@ -397,9 +397,20 @@
     return element
   }
 
+  function isElementInViewport(el) {
+    var rect = el.getBoundingClientRect();
+    return (rect.bottom >= 0 && rect.right >= 0 && rect.top <= (window.innerHeight || document.documentElement.clientHeight) && rect.left <= (window.innerWidth || document.documentElement.clientWidth));
+  }
+
+  
   // PUBLIC FUNCTIONS
 
   curlify.render = function() {
+
+    window.requestAnimationFrame( curlify.render )
+
+    if ( document.hidden || isElementInViewport( glcanvas ) == false ) return
+
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.disable(gl.DEPTH_TEST);
@@ -410,11 +421,7 @@
     gl.viewport(layoutOffset.x, layoutOffset.y, layoutWidth, layoutHeight)
     
     scene.render()
-  }
 
-  curlify.setRenderInterval = function(ms) {
-    if (curlify.intervalId != null) window.clearInterval(curlify.intervalId)
-    curlify.intervalId = window.setInterval(curlify.render, ms);
   }
 
   curlify.stop = function() {
@@ -532,7 +539,7 @@
       .then( function(scriptobject)
       {
         scene.openScene( scriptobject.new() )
-        if (parameters.renderInterval != null) curlify.setRenderInterval(parameters.renderInterval)
+        window.requestAnimationFrame( curlify.render )
       }
     )
   }
