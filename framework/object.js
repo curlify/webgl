@@ -16,17 +16,44 @@
 
         eval(curlify.extract(curlify.localVars,"curlify.localVars"))
         
+        // create as monitored objects for animation optimisations (ie. don't draw if not needed)
+        var monitored_vec3 = function(x,y,z) 
+        {
+          return {
+            x_value:x ? x : 0,
+            y_value:y ? y : 0,
+            z_value:z ? z : 0,
+            get x() { return this.x_value },
+            set x(val) { if (val == this.x_value) return; curlify.requestRender(); this.x_value = val },
+            get y() { return this.y_value },
+            set y(val) { if (val == this.y_value) return; curlify.requestRender(); this.y_value = val },
+            get z() { return this.z_value },
+            set z(val) { if (val == this.z_value) return; curlify.requestRender(); this.z_value = val },
+          }
+        }
+
         return {
 
           identifier : (ident == null ? "object identifier" : ident),
-          position : {x:0, y:0, z:0},
-          rotate : {x:0, y:0, z:0},
-          scale : {x:1, y:1, z:1},
-          size : {width:(width == null ? screenWidth : width), height:(height == null ? screenHeight : height)},
+          position : new monitored_vec3,
+          rotate : new monitored_vec3,
+          scale : new monitored_vec3(1,1,1),
+          size : {
+            width_value:(width == null ? screenWidth : width),
+            height_value:(height == null ? screenHeight : height),
+            get width() { return this.width_value },
+            set width(val) { if (val == this.width_value) return; curlify.requestRender(); this.width_value = val },
+            get height() { return this.height_value },
+            set height(val) { if (val == this.height_value) return; curlify.requestRender(); this.height_value = val },
+          },
           children : [],
           active : true,
-          visible : true,
-          alpha : 1,
+          visible_value : true,
+          get visible() { return this.visible_value },
+          set visible(val) { if (val == this.visible_value) return; curlify.requestRender(); this.visible_value = val; },
+          alpha_value : 1,
+          get alpha() { return this.alpha_value },
+          set alpha(val) { if (val == this.alpha_value) return; curlify.requestRender(); this.alpha_value = val; },
 
           blend : true,
           drawbackside : false,
@@ -39,9 +66,11 @@
           translateScale : camera.translateScale,
           identityMatrix : mat4.create(),
 
-          anim : animator.new(),
+          anim_value : null,
+          get animator() { anim_value = anim_value ? animator.new(); return anim_value },
+          set animator(val) { console.log("ERROR: will not replace object internal members") },
           timervalue : 0,
-          lastdraw : 0,
+          //lastdraw : 0,
           laststep : 0,
 
           add : function(child) {
@@ -110,7 +139,7 @@
             var timedelta = Math.max(1,Math.min(sys.timestamp()-this.laststep,60))
             this.laststep = sys.timestamp()
 
-            this.anim.step()
+            //this.anim.step()
 
             if (this.preStep != null) this.preStep()
             if (this.step != null) this.step(timedelta)
@@ -126,8 +155,8 @@
           drawTree : function() {
             //console.log("drawTree : "+this.identifier+" children : "+this.children.length)
 
-            var timedelta = Math.min(sys.timestamp()-this.lastdraw,60)
-            this.lastdraw = sys.timestamp()
+            //var timedelta = Math.min(sys.timestamp()-this.lastdraw,60)
+            //this.lastdraw = sys.timestamp()
 
             if (this.visible == false) return
 

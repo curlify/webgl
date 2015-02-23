@@ -16,6 +16,7 @@
   var aspectratioZoom = true
   var touch = false
   var lasttouch = null
+  var renderRequested = true
   var imageid = 0
   var running = false
   var appendedElements = []
@@ -402,8 +403,12 @@
     return (rect.bottom >= 0 && rect.right >= 0 && rect.top <= (window.innerHeight || document.documentElement.clientHeight) && rect.left <= (window.innerWidth || document.documentElement.clientWidth));
   }
 
-  
   // PUBLIC FUNCTIONS
+
+  // this is really only for object.js
+  curlify.requestRender = function() {
+    renderRequested = true
+  }
 
   curlify.render = function() {
 
@@ -411,7 +416,9 @@
 
     window.requestAnimationFrame( curlify.render )
 
-    if ( document.hidden || isElementInViewport( glcanvas ) == false ) return
+    if ( document.hidden || isElementInViewport( glcanvas ) == false || renderRequested == false ) return
+
+    renderRequested = false
 
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
