@@ -161,8 +161,8 @@
         }
 
         instance.drawTree = function() {
-          var timedelta = Math.min(sys.timestamp()-this.lastdraw,60)
-          this.lastdraw = sys.timestamp()
+          //var timedelta = Math.min(sys.timestamp()-this.lastdraw,60)
+          //this.lastdraw = sys.timestamp()
 
           if (this.visible == false) return
 
