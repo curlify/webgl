@@ -20,7 +20,8 @@ var animator = (function() {
 
     new : function() {
 
-      return {
+      var referenceForStep = null
+      var instance = {
 
         animations : [],
 
@@ -54,6 +55,10 @@ var animator = (function() {
               init : init,
             }        
           )
+
+          //console.log("request step",this.animations)
+
+          window.requestAnimationFrame(this.step)
         },
 
         step : function() {
@@ -61,8 +66,10 @@ var animator = (function() {
           var dead = []
           var now = sys.timestamp()
 
-          for (var key in this.animations) {
-            var animation = this.animations[key]
+          var requested = false
+
+          for (var key in referenceForStep.animations) {
+            var animation = referenceForStep.animations[key]
             var deadline = animation.deadline
             var pos = 0
             
@@ -85,20 +92,24 @@ var animator = (function() {
               animation.target[key] = animation.config.ease(initial, animation.config[key], pos)
             }
             
+            if (requested == false) {
+              window.requestAnimationFrame(referenceForStep.step)
+              requested = true
+            }
             //sys.requestRepaint()
           }
           
           //remove dead animations
           for (i = dead.length-1; i >= 0; i--) {
-            var completeFunc = this.animations[dead[i]].config.onComplete
+            var completeFunc = referenceForStep.animations[dead[i]].config.onComplete
             //delete this.animations[dead[i]]
-            this.animations.splice(dead[i],1)
-            //console.log("animations.length",this.animations.length)
+            referenceForStep.animations.splice(dead[i],1)
+            //console.log("animations.length",referenceForStep.animations.length)
             if (completeFunc != null) {
               completeFunc()
             }
           }
-          
+
         },
 
         pause : function() {
@@ -113,6 +124,7 @@ var animator = (function() {
             this.animations [k].paused = false
             this.animations [k].deadline = this.animations [k].deadline + (sys.timestamp() - self.animations [k].pausetimestamp)
           }
+          window.requestAnimationFrame(this.step)
         },
 
         stop : function() {
@@ -123,6 +135,9 @@ var animator = (function() {
           this.animations = []
         },
       }
+
+      referenceForStep = instance
+      return instance
     }
 
   };
