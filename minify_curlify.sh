@@ -21,6 +21,9 @@ framework/sprite.js \
 framework/carousel.js \
 framework/carousel_vertical.js \
 framework/scrollable.js \
+framework/text.js \
+framework/jsonfile.js \
+framework/video.js \
 framework/main.js \
 -o curlify.min.js \
 -m \
