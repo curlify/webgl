@@ -66,9 +66,7 @@
           translateScale : camera.translateScale,
           identityMatrix : mat4.create(),
 
-          anim_value : null,
-          get animator() { anim_value = anim_value ? animator.new(); return anim_value },
-          set animator(val) { console.log("ERROR: will not replace object internal members") },
+          anim : animator.new(),
           timervalue : 0,
           //lastdraw : 0,
           laststep : 0,
@@ -111,6 +109,7 @@
 
             if (this.depthtest) {
               gl.enable( gl.DEPTH_TEST )
+              gl.depthFunc( gl.LEQUAL )
             } else {
               gl.disable( gl.DEPTH_TEST )
             }
@@ -139,7 +138,7 @@
             var timedelta = Math.max(1,Math.min(sys.timestamp()-this.laststep,60))
             this.laststep = sys.timestamp()
 
-            //this.anim.step()
+            this.anim.step()
 
             if (this.preStep != null) this.preStep()
             if (this.step != null) this.step(timedelta)
