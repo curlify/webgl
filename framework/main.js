@@ -1,12 +1,12 @@
 
 (function() {
 
-  console.log("inititalize main")
+  var revision = "6.2"
+
+  console.log("inititalize main",revision)
 
   var currentScript = document.currentScript
   var curlify = document.currentScript.curlify
-
-  var revision = "5"
 
   // evil extraction of all modules to local variables so that scripts have 'object' etc. defined already
   eval(curlify.extract(curlify.modules,"curlify.modules"))
@@ -34,11 +34,14 @@
   }
 
   var createProjectionAndView = function(w,h,near,far) {
-    //var projectionMatrix = mat4.perspective( 120, h/w, near, far );
     var projectionMatrix = createProjection(1, h/w, near,far);
+    //var projectionMatrix = mat4.create()
+    //mat4.perspective( projectionMatrix, 60, h/w, near, far );
 
     var viewMatrix = mat4.create();
     mat4.translate( viewMatrix, viewMatrix, vec3.clone([0,0,-(far-near)/2]) );
+    //var viewMatrix = mat4.clone([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+    //mat4.lookAt( viewMatrix, vec3.clone([0,0,-(far-near)/2]), vec3.clone([0,0,0]), vec3.clone([0,1,0]))
     var quadToScreenScale = ((far-near)/2)/near;
 
     var cam = {near:near,far:far,width:w,height:h,projectionMatrix:projectionMatrix, viewMatrix:viewMatrix, translateScale:quadToScreenScale};
@@ -50,6 +53,7 @@
     
     try {
       // Try to grab the standard context. If it fails, fallback to experimental.
+      // {premultipliedAlpha: false}
       gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     }
     catch(e) {}
@@ -414,10 +418,11 @@
 
     if (running == false) return
 
-    window.requestAnimationFrame( curlify.render )
+    //window.requestAnimationFrame( curlify.render )
 
-    if ( document.hidden || isElementInViewport( glcanvas ) == false || renderRequested == false ) return
+    if ( document.hidden || isElementInViewport( glcanvas ) == false/* || renderRequested == false*/ ) return
 
+    curlify.localVars.zipfile = null
     renderRequested = false
 
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -548,7 +553,8 @@
       .then( function(scriptobject)
       {
         scene.openScene( scriptobject.new() )
-        window.requestAnimationFrame( curlify.render )
+        //window.requestAnimationFrame( curlify.render )
+        window.setInterval( curlify.render, 1000/60 )
       }
     )
   }

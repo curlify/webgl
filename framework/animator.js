@@ -58,7 +58,8 @@ var animator = (function() {
 
           //console.log("request step",this.animations)
 
-          window.requestAnimationFrame(this.step)
+          //window.requestAnimationFrame(this.step)
+          curlify.requestRender()
         },
 
         step : function() {
@@ -93,8 +94,9 @@ var animator = (function() {
             }
             
             if (requested == false) {
-              window.requestAnimationFrame(referenceForStep.step)
+              //window.requestAnimationFrame(referenceForStep.step)
               requested = true
+              curlify.requestRender()
             }
             //sys.requestRepaint()
           }
@@ -124,7 +126,8 @@ var animator = (function() {
             this.animations [k].paused = false
             this.animations [k].deadline = this.animations [k].deadline + (sys.timestamp() - self.animations [k].pausetimestamp)
           }
-          window.requestAnimationFrame(this.step)
+          //window.requestAnimationFrame(this.step)
+          curlify.requestRender()
         },
 
         stop : function() {
