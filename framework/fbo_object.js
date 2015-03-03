@@ -72,7 +72,7 @@
         var instance = quad.new("fbo_object : "+identifier,w,h);
 
         instance.glProgram = this.default_program.getProgram()
-        console.log("fbo_object.new(",instance.dentifier,instance.size.width,instance.size.height,curlify.localVars.screenWidth,curlify.localVars.screenHeight,")")
+        console.log("fbo_object.new(",instance.dentifier,instance.size.width,instance.size.height,instance.glProgram,")")
 
         instance.dobypassFbo = false
         instance.lastUpdated = -99999
@@ -167,6 +167,7 @@
           if (this.visible == false) return
 
           this.update();
+          if (this.preDraw != null) this.preDraw();
 
           if (this.dobypassFbo) {
             for (var i = 0; i < this.children.length; i++) {
@@ -180,30 +181,6 @@
           if (this.postDraw != null) this.postDraw();
         }
 
-        instance.draw = function() {
-
-          gl.useProgram(this.glProgram.program);
-
-          gl.activeTexture(gl.TEXTURE0)
-          gl.bindTexture(gl.TEXTURE_2D, instance.texture)
-          gl.uniform1i(this.glProgram.u_texture_handle, 0)
-
-          gl.uniform1f(this.glProgram.u_alpha_handle, this.absolutealpha());
-
-          gl.uniformMatrix4fv(this.glProgram.u_projection_handle, false, this.projectionMatrix);
-          gl.uniformMatrix4fv(this.glProgram.u_view_handle, false, this.viewMatrix);
-          gl.uniformMatrix4fv(this.glProgram.u_model_handle, false, this.quadModelMatrix);
-          
-          var buffer = (this.buffer ? this.buffer : quad.buffer)
-
-          gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-          gl.enableVertexAttribArray(this.glProgram.a_position_handle)
-          gl.enableVertexAttribArray(this.glProgram.a_tex_coordinate_handle)
-
-          gl.vertexAttribPointer(this.glProgram.a_position_handle, buffer.itemSize, gl.FLOAT, false, 16, 0);
-          gl.vertexAttribPointer(this.glProgram.a_tex_coordinate_handle, buffer.itemSize, gl.FLOAT, false, 16, 8);
-          gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.numItems);
-        };
 
         return instance;
       }
