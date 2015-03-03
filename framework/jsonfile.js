@@ -1,16 +1,30 @@
 
-var jsonfile = {
-  json : null,
-  open : function(filename) {
-    var rv = {}
-    if (zip != null) {
-      var zipEntry = zip.file(filename)
-      if (zipEntry != null) rv = JSON.parse(zipEntry.asText())
-    } else {
+(function() {
 
+  var curlify = document.currentScript.curlify
+
+  var jsonfile = (function() {
+
+    return {
+      json : null,
+      open : function(filename) {
+
+        var zipfile = curlify.localVars.zipfile
+
+        var rv = {}
+        if (zipfile != null) {
+          var zipEntry = zipfile.file(filename)
+          if (zipEntry != null) rv = JSON.parse(zipEntry.asText())
+        } else {
+
+        }
+        this.json = rv
+        return this
+      },
     }
-    this.json = rv
-    return this
-  },
-}
 
+  })()
+
+  curlify.module("jsonfile",jsonfile)
+
+})()
