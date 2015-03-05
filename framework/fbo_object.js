@@ -11,6 +11,7 @@
     var scene = curlify.getModule("scene")
     var quad = curlify.getModule("quad")
     var sys = curlify.getModule("sys")
+    var object = curlify.getModule("object")
 
     return {
 
@@ -72,7 +73,14 @@
         var instance = quad.new("fbo_object : "+identifier,w,h);
 
         instance.glProgram = this.default_program.getProgram()
-        console.log("fbo_object.new(",instance.dentifier,instance.size.width,instance.size.height,instance.glProgram,")")
+        console.log("fbo_object.new(",instance.identifier,instance.size.width,instance.size.height,instance.glProgram,")")
+
+        // hack to make a parent for fbo children with correcting dimensions
+        instance.parentobject = object.new()
+        instance.parentobject.add( object.new() )
+        instance.parentobject.scale.x = curlify.localVars.screenWidth/instance.size.width
+        instance.parentobject.scale.y = curlify.localVars.screenHeight/instance.size.height
+        instance.parentobject.update()
 
         instance.dobypassFbo = false
         instance.lastUpdated = -99999
@@ -138,8 +146,9 @@
           layoutOffset = curlify.localVars.layoutOffset
 
           for (var i = 0; i < instance.children.length; i++) {
-            instance.children[i].parent = null;
-            instance.children[i].viewMatrix = curlify.localVars.camera.viewMatrix
+            instance.children[i].parent = instance.parentobject//null;
+            //instance.children[i].viewMatrix = curlify.localVars.camera.viewMatrix
+            instance.children[i].viewMatrix = instance.parentobject.modelViewMatrix
             instance.children[i].drawTree();
           };
 
