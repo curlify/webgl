@@ -209,15 +209,15 @@ animator.inOutQuart = function(initial, final, pos) {
 }
 
 animator.inSine = function(initial, final, pos) {
-  return initial + (final - initial) * (1 - Math.cos(pos * Math.pi/2))
+  return initial + (final - initial) * (1 - Math.cos(pos * Math.PI/2))
 }
 
 animator.outSine = function(initial, final, pos) {
-  return initial + (final - initial) * Math.sin(pos * Math.pi/2)
+  return initial + (final - initial) * Math.sin(pos * Math.PI/2)
 }
 
 animator.inOutSine = function(initial, final, pos) {
-  return initial - (final - initial)/2 * (Math.cos(Math.pi * pos) - 1)
+  return initial - (final - initial)/2 * (Math.cos(Math.PI * pos) - 1)
 }
 
 animator.inExpo = function(initial, final, pos) {
@@ -260,11 +260,11 @@ animator.inOutCirc = function(initial, final, pos) {
 
 animator.inElastic = function(initial, final, pos) {
   pos = pos - 1 // Map range [0, 1] to range [-1, 0]
-  return initial - (final - initial) * Math.pow(2, 10*pos) * Math.sin((pos - 0.0777777) * 6 * Math.pi)
+  return initial - (final - initial) * Math.pow(2.0, 10.0*pos) * Math.sin((pos - 0.0777777) * 6.0 * Math.PI)
 }
 
 animator.outElastic = function(initial, final, pos) {
-  return initial + (final - initial) * (Math.pow(2, -10*pos) * Math.sin((pos - 0.0777777) * 6 * Math.pi) + 1)
+  return initial + (final - initial) * (Math.pow(2.0, -10.0*pos) * Math.sin((pos - 0.0777777) * 6.0 * Math.PI) + 1)
 }
 
 
