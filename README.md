@@ -6,7 +6,7 @@ WebGL framework
 <html> 
   <body>
     <canvas style="width: 480;height: 200">
-      <script onload="this.curlify.start({script:'http://api.curlify.com/units/ads/1773/assets/dev.zip',renderInterval:1000/60})" type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script>
+      <script onload="this.curlify.start({script:'http://api.curlify.com/units/ads/1773/assets/dev.zip'})" type="text/javascript" src="http://curlify.io/dev/curlify.min.js"></script>
     </canvas>
   </body>
 </html> 
