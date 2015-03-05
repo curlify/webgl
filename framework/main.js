@@ -147,12 +147,16 @@
   function deviceMotionHandler(e) {
     // Grab the acceleration from the results
     sensors.acceleration = e.acceleration;
+
     // Grab the rotation rate from the results
     sensors.rotation = e.rotationRate;
   }
 
+  var orientation_hack = (sys.ismobile.any() ? -180 : 0)
   function deviceOrientationHandler(e) {
-    sensors.orientation = e;
+    // make orientation -180 -> 180 on all devices
+    if (e==null) return
+    sensors.orientation = {alpha:e.alpha+orientation_hack,beta:e.beta,gamma:e.gamma};
   }
 
   function orientationChanged() {
