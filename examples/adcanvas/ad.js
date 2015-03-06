@@ -15,8 +15,13 @@
         require(json.zip)
           .then(function(scriptobject)
           {
+            console.log("loaded zip:",json.zip,zipfile,curlify.localVars.zipfile,scriptobject)
             instance.updateInterval = 0
             var scriptinstance = adplace.add( scriptobject.new({parent:parent,json:json}) )
+
+            zipfile = null
+            curlify.localVars.zipfile = null
+            
             if (instance.onload != null) instance.onload()
 
             splash.anim.animate( splash, {alpha:0,time:250,onComplete:
@@ -26,6 +31,10 @@
             })
           },function(error){
             console.log("failed zip load!!!",error)
+
+            zipfile = null
+            curlify.localVars.zipfile = null
+            
             parent.scenefocus()
           })
 

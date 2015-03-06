@@ -76,7 +76,7 @@
           content.itemsize = screenWidth*0.5
           content.inertia = 5
           //content.swipespeed = screenWidth/8
-          //content.movethreshold = 0
+          content.movethreshold = 5
 
           var info = instance.add( object.new("info area") )
           info.position.y = -300
