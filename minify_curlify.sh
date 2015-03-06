@@ -16,6 +16,7 @@ framework/rectangle.js \
 framework/image.js \
 framework/masked_image.js \
 framework/fbo_object.js \
+framework/masked_fbo_object.js \
 framework/button.js \
 framework/sprite.js \
 framework/carousel.js \
