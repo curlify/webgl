@@ -66,7 +66,7 @@ Curlify - A javascript webgl framework
   }
 
   // local variables for scripts local scope - evil
-  document.currentScript.curlify.localVars.sensors = {acceleration:null,rotation:null,orientation:{alpha:0,beta:0,gamma:0}, damped_orientation:{alpha:0,beta:0,gamma:0,inertia:10}}
+  document.currentScript.curlify.localVars.sensors = {acceleration:null,rotationRate:null,orientation:{alpha:0,beta:0,gamma:0}, damped_orientation:{alpha:0,beta:0,gamma:0,inertia:10}}
   document.currentScript.curlify.localVars.zipfile = null
   document.currentScript.curlify.localVars.layoutWidth = null
   document.currentScript.curlify.localVars.layoutHeight = null
