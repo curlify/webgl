@@ -1,7 +1,7 @@
 
 (function() {
 
-  var revision = "6.2"
+  var revision = "6.5"
 
   console.log("inititalize main",revision)
 
@@ -149,13 +149,16 @@
     sensors.acceleration = e.acceleration;
 
     // Grab the rotation rate from the results
-    sensors.rotation = e.rotationRate;
+    sensors.rotationRate = e.rotationRate;
+
+    //console.log("alpha: "+e.rotation.alpha)
   }
 
   var orientation_hack = (sys.ismobile.any() ? -180 : 0)
   function deviceOrientationHandler(e) {
     // make orientation -180 -> 180 on all devices
     if (e==null) return
+    //console.log("alpha: "+e.alpha+","+(e.alpha+orientation_hack)+","+orientation_hack)
     sensors.orientation = {alpha:e.alpha+orientation_hack,beta:e.beta,gamma:e.gamma};
   }
 
@@ -169,6 +172,9 @@
     //console.log("resizeCanvas",glcanvas)
     var width = glcanvas.clientWidth;
     var height = glcanvas.clientHeight;
+
+    console.log("resizeCanvas"+","+width+","+height+","+glcanvas.width+","+glcanvas.height)
+
     if (glcanvas.width != width ||
        glcanvas.height != height) {
 
@@ -212,7 +218,7 @@
 
     }
 
-    //console.log("resizeCanvas",glcanvas.clientWidth,glcanvas.clientHeight,screenWidth,screenHeight,glcanvas.width,glcanvas.height)
+    console.log("resizeCanvas"+","+glcanvas.clientWidth+","+glcanvas.clientHeight+","+screenWidth+","+screenHeight+","+glcanvas.width+","+glcanvas.height)
 
   }
 
@@ -336,6 +342,7 @@
             }
             zipfile = new JSZip(data);
             curlify.localVars.zipfile = zipfile
+            //console.log("require zip file",zipfile)
             var adscriptfile = zipfile.file("main.js")
             if (adscriptfile == null) {
               zipfile = null
@@ -343,6 +350,7 @@
               reject(Error("require failed for '"+script+"' with 'main.js not found inside zip'"))
               return
             }
+            //console.log("require adscript file",adscriptfile.asText())
             var scriptobject = null
             try {
               scriptobject = eval(adscriptfile.asText())
@@ -352,6 +360,7 @@
               reject(Error("require eval failed for zip '"+script+"' with '"+e+"'"))
               return
             }
+            //console.log("require scriptobject",scriptobject)
             resolve(scriptobject)
             //zipfile = null
           })
@@ -426,7 +435,9 @@
 
     if ( document.hidden || isElementInViewport( glcanvas ) == false/* || renderRequested == false*/ ) return
 
-    curlify.localVars.zipfile = null
+    //zipfile = null
+    //curlify.localVars.zipfile = null
+
     renderRequested = false
 
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -557,6 +568,10 @@
       .then( function(scriptobject)
       {
         scene.openScene( scriptobject.new() )
+
+        zipfile = null
+        curlify.localVars.zipfile = null
+
         //window.requestAnimationFrame( curlify.render )
         window.setInterval( curlify.render, 1000/60 )
       }
