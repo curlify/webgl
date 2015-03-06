@@ -21,6 +21,11 @@ WebGL framework
 <i>height:</i> sets layout resolution height (screenHeight in scripts) - defaults to 852<br>
 <i>canvas:</i> target canvas - defaults to document.currentScript.parentNode<br>
 
+<b>note:</b>a fullscreen canvas will usually result in a low resolution canvas due to devicePixelRatio. fix by calling the following before curlify.start:
+```html
+var scale=1/window.devicePixelRatio;document.getElementById('viewport').setAttribute('content','initial-scale='+scale+', user-scalable=0');
+```
+
 <h4>Brief explanation</h4>
 - curlify.js creates the module container into document.currentScript.curlify.
 - All modules declare and add themselves as modules via curlify.module function
