@@ -1,7 +1,7 @@
 <html> 
   <head>
 
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta id="viewport" name="viewport" content="initial-scale=1.0, user-scalable=0" />
 
     <style>
       body, html { 
@@ -20,7 +20,8 @@
 
   <body>
     <canvas style="width: 100%;height: 100%">
-      <script id='ad' onload="this.curlify.start({script:'adcanvas.js'})" type="text/javascript" src="../../curlify.min.js"></script>
+      <script id='ad' onload="var scale=1/window.devicePixelRatio;document.getElementById('viewport').setAttribute('content',
+      'initial-scale='+scale+', user-scalable=0');this.curlify.start({script:'adcanvas.js'})" type="text/javascript" src="../../curlify.min.js"></script>
     </canvas>
   </body>
 
