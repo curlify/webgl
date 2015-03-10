@@ -221,6 +221,7 @@
     console.log("resizeCanvas"+","+glcanvas.clientWidth+","+glcanvas.clientHeight+","+screenWidth+","+screenHeight+","+glcanvas.width+","+glcanvas.height)
 
   }
+  curlify.resizeCanvas = resizeCanvas
 
   function mergeRecursive(obj1, obj2) {
     for (var p in obj2) {
@@ -443,6 +444,7 @@
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.disable(gl.DEPTH_TEST);
+    //gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE)
     gl.cullFace(gl.FRONT);
 
@@ -554,12 +556,12 @@
     if (window.DeviceMotionEvent) {
       window.addEventListener('devicemotion', deviceMotionHandler, false)
     } else {
-      alert("DeviceMotionEvent not supported")
+      console.log("DeviceMotionEvent not supported")
     }
     if (window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', deviceOrientationHandler, false)
     } else {
-      alert("DeviceOrientationEvent not supported")
+      console.log("DeviceOrientationEvent not supported")
     }
 
     window.addEventListener('orientationchange', orientationChanged);
