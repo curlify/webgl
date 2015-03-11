@@ -1,7 +1,7 @@
 
 (function() {
 
-  var revision = "6.5"
+  var revision = "6.6"
 
   console.log("inititalize main",revision)
 
@@ -72,13 +72,13 @@
 
   function mousedown(e) {
     if (scene.isAnimating() || touch == true) return
-    //console.log("mousedown : "+e.clientX+","+e.clientY,layoutOffset.x,layoutOffset.y)
     var tgt = e.currentTarget.getBoundingClientRect()
+    //console.log("mousedown : "+e.clientX+","+e.clientY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.clientX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
-    target.drag((e.clientX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
+    target.press((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
+    target.drag((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
   }
 
   function mouseup(e) {
@@ -89,7 +89,7 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release((e.clientX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
+    target.release((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
   }
 
   function mouseout(e) {
@@ -104,14 +104,14 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.clientX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
+      target.drag((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
     }
   }
 
   function touchstart(e) {
     if (scene.isAnimating() || touch == true) return
-    //console.log("touchstart : "+e.touches[0].pageX+","+e.touches[0].pageY)
     var tgt = e.currentTarget.getBoundingClientRect()
+    //console.log("touchstart : "+e.touches[0].pageX+","+e.touches[0].pageY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
@@ -163,60 +163,54 @@
   }
 
   function orientationChanged() {
-    console.log("ORIENTATION CHANGED")
+    console.log("orientationChanged() "+","+screen.orientation+","+screen.width+","+screen.height+" : "+glcanvas.clientWidth+","+glcanvas.clientHeight)
+    window.requestAnimationFrame( curlify.resizeCanvas )
   }
 
   function resizeCanvas() {
-    // only change the size of the canvas if the size it's being displayed
-    // has changed.
     //console.log("resizeCanvas",glcanvas)
     var width = glcanvas.clientWidth;
     var height = glcanvas.clientHeight;
 
-    console.log("resizeCanvas"+","+width+","+height+","+glcanvas.width+","+glcanvas.height)
+    //console.log("resizeCanvas"+","+width+","+height+","+glcanvas.width+","+glcanvas.height)
 
-    if (glcanvas.width != width ||
-       glcanvas.height != height) {
+    layoutWidth = width
+    layoutHeight = height
+    layoutScale = {x: screenWidth/layoutWidth, y:screenHeight/layoutHeight}
 
-      layoutWidth = width
-      layoutHeight = height
-      layoutScale = {x: screenWidth/layoutWidth, y:screenHeight/layoutHeight}
+    viewWidth = screenWidth
+    viewHeight = screenHeight
 
-      viewWidth = screenWidth
-      viewHeight = screenHeight
-
-      var usescale = Math.max( layoutScale.x, layoutScale.y )
-      if (aspectratioZoom) {
-        usescale = Math.min( layoutScale.x, layoutScale.y )
-        viewWidth = width*usescale
-        viewHeight = height*usescale
-        //console.log("using aspect ratio zoom",width,height,viewWidth,viewHeight,screenWidth,screenHeight)
-      }
-      layoutScale.x = usescale
-      layoutScale.y = usescale
-
-      layoutWidth = Math.floor(screenWidth*(1/usescale))
-      layoutHeight = Math.floor(screenHeight*(1/usescale))
-
-      layoutOffset.x = (width-layoutWidth)/2,
-      layoutOffset.y = (height-layoutHeight)/2
-
-      glcanvas.width = glcanvas.clientWidth
-      glcanvas.height = glcanvas.clientHeight
-
-      //console.log("resized",glcanvas.width,glcanvas.height,viewWidth,viewHeight)
-      curlify.localVars.layoutWidth = layoutWidth
-      curlify.localVars.layoutHeight = layoutHeight
-      curlify.localVars.layoutScale = layoutScale
-      curlify.localVars.layoutOffset = layoutOffset
-
-      curlify.localVars.viewWidth = viewWidth
-      curlify.localVars.viewHeight = viewHeight
-
-      curlify.localVars.screenWidth = screenWidth
-      curlify.localVars.screenHeight = screenHeight
-
+    var usescale = Math.max( layoutScale.x, layoutScale.y )
+    if (aspectratioZoom) {
+      usescale = Math.min( layoutScale.x, layoutScale.y )
+      viewWidth = width*usescale
+      viewHeight = height*usescale
+      //console.log("using aspect ratio zoom",width,height,viewWidth,viewHeight,screenWidth,screenHeight)
     }
+    layoutScale.x = usescale
+    layoutScale.y = usescale
+
+    layoutWidth = Math.floor(screenWidth*(1/usescale))
+    layoutHeight = Math.floor(screenHeight*(1/usescale))
+
+    layoutOffset.x = (width-layoutWidth)/2,
+    layoutOffset.y = (height-layoutHeight)/2
+
+    glcanvas.width = glcanvas.clientWidth
+    glcanvas.height = glcanvas.clientHeight
+
+    //console.log("resized",glcanvas.width,glcanvas.height,viewWidth,viewHeight)
+    curlify.localVars.layoutWidth = layoutWidth
+    curlify.localVars.layoutHeight = layoutHeight
+    curlify.localVars.layoutScale = layoutScale
+    curlify.localVars.layoutOffset = layoutOffset
+
+    curlify.localVars.viewWidth = viewWidth
+    curlify.localVars.viewHeight = viewHeight
+
+    curlify.localVars.screenWidth = screenWidth
+    curlify.localVars.screenHeight = screenHeight
 
     console.log("resizeCanvas"+","+glcanvas.clientWidth+","+glcanvas.clientHeight+","+screenWidth+","+screenHeight+","+glcanvas.width+","+glcanvas.height)
 
@@ -564,7 +558,15 @@
       console.log("DeviceOrientationEvent not supported")
     }
 
-    window.addEventListener('orientationchange', orientationChanged);
+    var supportsOrientationChange = "onorientationchange" in window,
+        orientationEvent = supportsOrientationChange && sys.ismobile.iOS() ? "orientationchange" : "resize";
+
+    window.addEventListener(orientationEvent, function() {
+        console.log('rotation:' + window.orientation + " " + orientationEvent + " " + screen.width);
+        orientationChanged()
+    }, false);
+
+    //window.addEventListener('orientationchange', orientationChanged, false);
     
     require( parameters.script )
       .then( function(scriptobject)
