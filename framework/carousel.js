@@ -124,23 +124,43 @@
           if (container.carouselmoved != null) container.carouselmoved(container.selecteditem)
         }
         
+        var renderOffsetItem = function(item,offset) {
+          var originalactive = item.active
+          var originalvisible = item.visible
+          var originalitemposition = item.itemposition
+          item.itemposition = originalitemposition + offset
+          item.stepTree()
+          item.drawTree()
+          item.itemposition = originalitemposition
+          item.step(0)
+          item.visible = originalvisible
+          item.active = originalactive
+        }
+
+        container.preDraw = function() {
+          if (container.wrap) {
+            if (container.transition.reverse_draw) {
+              for (var i=itemcontainer.children.length-1;i>=0;i--) {
+                renderOffsetItem( itemcontainer.children[i], itemcontainer.children.length )
+              }
+            } else {
+              for (var i=0;i <itemcontainer.children.length;i++) {
+                renderOffsetItem( itemcontainer.children[i], itemcontainer.children.length )
+              }
+            }
+          }
+        }
+
         container.postDraw = function() {
           if (container.wrap) {
-            for (var i=0;i <itemcontainer.children.length;i++) {
-              var item = itemcontainer.children[i]
-              var originalactive = item.active
-              var originalvisible = item.visible
-              var originalitemposition = item.itemposition
-              item.itemposition = originalitemposition + itemcontainer.children.length
-              item.stepTree()
-              item.drawTree()
-              item.itemposition = originalitemposition - itemcontainer.children.length
-              item.stepTree()
-              item.drawTree()
-              item.itemposition = originalitemposition
-              item.step(0)
-              item.visible = originalvisible
-              item.active = originalactive
+            if (container.transition.reverse_draw) {
+              for (var i=itemcontainer.children.length-1;i>=0;i--) {
+                renderOffsetItem( itemcontainer.children[i], -itemcontainer.children.length )
+              }
+            } else {
+              for (var i=0;i <itemcontainer.children.length;i++) {
+                renderOffsetItem( itemcontainer.children[i], -itemcontainer.children.length )
+              }
             }
           }
         }
@@ -185,18 +205,29 @@
             }
           } else {
             
-            if (instance.targetposition.x > 1) {
-              console.log("switch",instance.position.x,instance.targetposition.x,container.contentsize.width)
+            if (instance.targetposition.x >= 1) {
+              //console.log("switch",instance.position.x,instance.targetposition.x,container.contentsize.width)
               instance.targetposition.x = instance.targetposition.x - itemcontainer.children.length
               instance.position.x = instance.position.x - itemcontainer.children.length
               instance.pressOffset.x = instance.pressOffset.x - itemcontainer.children.length
-            } else if (instance.targetposition.x < -itemcontainer.children.length) {
-              console.log("+++switch2",instance.position.x,instance.targetposition.x)
+            } else if (instance.targetposition.x <= -itemcontainer.children.length) {
+              //console.log("+++switch2",instance.position.x,instance.targetposition.x)
               instance.targetposition.x = instance.targetposition.x + itemcontainer.children.length
               instance.position.x = instance.position.x + itemcontainer.children.length
               instance.pressOffset.x = instance.pressOffset.x + itemcontainer.children.length
             }
-            
+
+            if (instance.targetposition.y >= 1) {
+              //console.log("switch y",instance.position.y,instance.targetposition.y,container.contentsize.height)
+              instance.targetposition.y = instance.targetposition.y - itemcontainer.children.length
+              instance.position.y = instance.position.y - itemcontainer.children.length
+              instance.pressOffset.y = instance.pressOffset.y - itemcontainer.children.length
+            } else if (instance.targetposition.y <= -itemcontainer.children.length) {
+              //console.log("+++switch y2",instance.position.y,instance.targetposition.y)
+              instance.targetposition.y = instance.targetposition.y + itemcontainer.children.length
+              instance.position.y = instance.position.y + itemcontainer.children.length
+              instance.pressOffset.y = instance.pressOffset.y + itemcontainer.children.length
+            }
           }
 
           var td = timedelta
