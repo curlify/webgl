@@ -64,16 +64,18 @@
           }
         }
         
+        /*
         function startVideo() {
           console.log("startVideo")
           video.player.play();
-        }  
+        }
+        */ 
 
         function videoDone() {
           console.log("videoDone")
         }
         video.preload = "auto"
-        video.player.addEventListener("canplaythrough", startVideo, true);
+        //video.player.addEventListener("canplaythrough", startVideo, true);
         video.player.addEventListener("ended", videoDone, true);
 
         function videoprogress() {
@@ -98,7 +100,7 @@
         video.player.setAttribute("webkit-playsinline", "");
 
         video.player.load()
-        video.player.play()
+        //video.player.play()
 
         video.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, video.texture);
@@ -122,7 +124,7 @@
               //video.size.width = video.player.width
               //video.size.height = video.player.height
 
-              console.log("video texture loaded : "+video.size.width+"x"+video.size.height)
+              console.log("video texture loaded : "+video.size.width+"x"+video.size.height+" : "+video.visible+","+video.alpha)
 
               if (video.onload != null) video.onload()
               video.loaded = true
@@ -171,7 +173,7 @@
           console.log("startDate  :"+video.player.startDate)
           console.log("duration  :"+video.player.duration)
           console.log("currentSrc  :"+video.player.currentSrc)
-          video.anim.animate(video, {alpha:1,time:2000,onComplete:video.checkstatus})
+          //video.anim.animate(video, {alpha:1,time:2000,onComplete:video.checkstatus})
           /*if (video.loaded && videoready) {
             if (video.player.paused) {
               console.log("trying to start")
