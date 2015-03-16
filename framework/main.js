@@ -1,9 +1,9 @@
 
 (function() {
 
-  var revision = "6.6"
+  var revision = "6.9"
 
-  console.log("inititalize main",revision)
+  console.log("initialize main",revision)
 
   var currentScript = document.currentScript
   var curlify = document.currentScript.curlify
@@ -23,7 +23,7 @@
 
 
   // PRIVATE FUNCTIONS
-  var createProjection = function(right, top, near, far) {
+  function createProjection(right, top, near, far) {
     var m = mat4.clone([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
     m[0] = near/right
     m[5] = near/top
@@ -33,7 +33,7 @@
     return m
   }
 
-  var createProjectionAndView = function(w,h,near,far) {
+  function createProjectionAndView(w,h,near,far) {
     var projectionMatrix = createProjection(1, h/w, near,far);
     //var projectionMatrix = mat4.create()
     //mat4.perspective( projectionMatrix, 60, h/w, near, far );
@@ -73,7 +73,7 @@
   function mousedown(e) {
     if (scene.isAnimating() || touch == true) return
     var tgt = e.currentTarget.getBoundingClientRect()
-    //console.log("mousedown : "+e.clientX+","+e.clientY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
+    console.log("mousedown : "+e.clientX+","+e.clientY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
@@ -84,7 +84,7 @@
   function mouseup(e) {
     scene.resetPointerStealer()
     if (scene.isAnimating() || touch == false) return
-    //console.log("mouseup : "+e.clientX+","+e.clientY)
+    console.log("mouseup : "+e.clientX+","+e.clientY)
     var tgt = e.currentTarget.getBoundingClientRect()
     touch = false
     var target = scene.getPointerUser()
@@ -163,7 +163,7 @@
   }
 
   function orientationChanged() {
-    console.log("orientationChanged() "+","+screen.orientation+","+screen.width+","+screen.height+" : "+glcanvas.clientWidth+","+glcanvas.clientHeight)
+    //console.log("orientationChanged() "+","+screen.orientation+","+screen.width+","+screen.height+" : "+glcanvas.clientWidth+","+glcanvas.clientHeight)
     window.requestAnimationFrame( curlify.resizeCanvas )
   }
 
@@ -314,7 +314,7 @@
     // check for internal framework module and instantly return for easier syntax
     var module = curlify.getModule(script)
     if (module != null) {
-      //console.log("return module '"+script+"'",module)
+      console.log("return module '"+script+"'",module)
       return module
     }
 
@@ -323,6 +323,8 @@
       
       var scriptid = script
       var element = document.getElementById(scriptid)
+
+      //console.log("returning promise")
 
       // script not found - load and eval into element.scriptobject
       if (element == null) {
@@ -476,6 +478,7 @@
     }
 
     window.removeEventListener('orientationchange', orientationChanged);
+    window.removeEventListener('resize', orientationChanged);
 
     scene.removeAllScenes()
 
@@ -483,12 +486,12 @@
       var scriptid = appendedElements[i]
       var element = document.getElementById(scriptid)
       element.parentNode.removeChild(element);
-      console.log("... removed element "+scriptid)
+      //console.log("... removed element "+scriptid)
     }
     appendedElements = []
 
     if (curlify.intervalId != null) {
-      console.log("... stopping render interval")
+      //console.log("... stopping render interval")
       window.clearInterval(curlify.intervalId);
     }
 
@@ -525,9 +528,11 @@
     resizeCanvas()
 
     gl = initWebGL(glcanvas);
+
     curlify.localVars.gl = gl
     // Only continue if WebGL is available and working  
     if (gl == null) {
+      console.log("ERROR: could not initialize webgl")
       return
     }
 
@@ -559,25 +564,26 @@
     }
 
     var supportsOrientationChange = "onorientationchange" in window,
-        orientationEvent = supportsOrientationChange && sys.ismobile.iOS() ? "orientationchange" : "resize";
+        orientationEvent = supportsOrientationChange && sys.ismobile.iOS() && false ? "orientationchange" : "resize";
 
     window.addEventListener(orientationEvent, function() {
-        console.log('rotation:' + window.orientation + " " + orientationEvent + " " + screen.width);
+        //console.log('rotation:' + window.orientation + " " + orientationEvent + " " + screen.width);
         orientationChanged()
     }, false);
 
     //window.addEventListener('orientationchange', orientationChanged, false);
-    
     require( parameters.script )
       .then( function(scriptobject)
       {
         scene.openScene( scriptobject.new() )
 
+        if (parameters.onload != null) parameters.onload()
+
         zipfile = null
         curlify.localVars.zipfile = null
 
         //window.requestAnimationFrame( curlify.render )
-        window.setInterval( curlify.render, 1000/60 )
+        curlify.intervalId = window.setInterval( curlify.render, 1000/60 )
       }
     )
   }
