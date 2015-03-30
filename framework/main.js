@@ -54,7 +54,7 @@
     try {
       // Try to grab the standard context. If it fails, fallback to experimental.
       // {premultipliedAlpha: false}
-      gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      gl = canvas.getContext("webgl", {alpha: false}) || canvas.getContext("experimental-webgl");
     }
     catch(e) {}
     
@@ -169,14 +169,19 @@
 
   function resizeCanvas() {
     //console.log("resizeCanvas",glcanvas)
-    var width = glcanvas.clientWidth;
-    var height = glcanvas.clientHeight;
+    var realToCSSPixels = window.devicePixelRatio || 1;
+    realToCSSPixels = 1
 
-    //console.log("resizeCanvas"+","+width+","+height+","+glcanvas.width+","+glcanvas.height)
+    var width = Math.floor(glcanvas.clientWidth * realToCSSPixels);
+    var height = Math.floor(glcanvas.clientHeight * realToCSSPixels);
+
+    //console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" * "+realToCSSPixels+" "+width+"x"+height+" "+glcanvas.width+"x"+glcanvas.height)
 
     layoutWidth = width
     layoutHeight = height
     layoutScale = {x: screenWidth/layoutWidth, y:screenHeight/layoutHeight}
+
+    //console.log("layoutScale",layoutScale.x,layoutScale.y)
 
     viewWidth = screenWidth
     viewHeight = screenHeight
@@ -212,7 +217,7 @@
     curlify.localVars.screenWidth = screenWidth
     curlify.localVars.screenHeight = screenHeight
 
-    console.log("resizeCanvas"+","+glcanvas.clientWidth+","+glcanvas.clientHeight+","+screenWidth+","+screenHeight+","+glcanvas.width+","+glcanvas.height)
+    console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" "+screenWidth+"x"+screenHeight+" "+layoutWidth+"x"+layoutHeight+" "+glcanvas.width+","+glcanvas.height)
 
   }
   curlify.resizeCanvas = resizeCanvas
