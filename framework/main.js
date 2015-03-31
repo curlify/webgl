@@ -13,6 +13,7 @@
   eval(curlify.extract(curlify.localVars,"curlify.localVars"))
 
   var glcanvas
+  var glclearcolor = 0.0
   var aspectratioZoom = true
   var touch = false
   var lasttouch = null
@@ -54,7 +55,7 @@
     try {
       // Try to grab the standard context. If it fails, fallback to experimental.
       // {premultipliedAlpha: false}
-      gl = canvas.getContext("webgl", {alpha: false}) || canvas.getContext("experimental-webgl");
+      gl = canvas.getContext("webgl"/*, {alpha: false}*/) || canvas.getContext("experimental-webgl");
     }
     catch(e) {}
     
@@ -367,33 +368,45 @@
             //zipfile = null
           })
 
-        // .js file
-        } else if (script.slice(-3) == ".js") {
+        // .js / jsonp file - all other types handled as a script
+        } else /*if (script.slice(-3) == ".js")*/ {
 
           // create element for cache purposes. NB: this means url-fetched .js files will be cached
           element = document.createElement('script')
           element.setAttribute('id',scriptid)
-          element.setAttribute('type',"script-container")
+          element.setAttribute('type',"text/javascript")
+
           document.head.appendChild(element);
           appendedElements.push(scriptid)
 
-          createCORSRequest('GET', script)
-            .then( function(response)
-            {
-              try {
-                element.scriptobject = eval(response)
-              } catch (e) {
-                reject(Error("require eval failed for '"+script+"' with '"+e+"'",response))
+          if (script.slice(-3) == ".js") {
+            createCORSRequest('GET', script)
+              .then( function(response)
+              {
+                try {
+                  element.scriptobject = eval(response)
+                } catch (e) {
+                  reject(Error("require eval failed for '"+script+"' with '"+e+"'",response))
+                  return
+                }
+                resolve(element.scriptobject)
+              }, function(error) {
+                reject(Error("require load failed for '"+script+"' with '"+error+"'"))
                 return
-              }
-              resolve(element.scriptobject)
-            }, function(error) {
-              reject(Error("require load failed for '"+script+"' with '"+error+"'"))
-              return
-            })
-        } else {
+              })
+          } else {
+            element.setAttribute('src',script)
+            element.onload = function() {
+              resolve()
+            }
+            element.onerror = function() {
+              reject(Error("require failed for '"+script+"'"))
+            }
+          }
+
+        /*} else {
           reject(Error("require failed for '"+script+"' with 'unsupported source'"))
-          return
+          return*/
         }
 
       // return element.scriptobject
@@ -442,6 +455,7 @@
 
     renderRequested = false
 
+    //gl.colorMask(true, true, true, true);
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.disable(gl.DEPTH_TEST);
@@ -454,6 +468,13 @@
     
     scene.render()
 
+    /*
+    glclearcolor = glclearcolor + 0.01
+    glclearcolor = Math.min(1.0,glclearcolor)
+    gl.clearColor(1, 1, 1, glclearcolor);
+    gl.colorMask(false, false, false, true);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    */
   }
 
   curlify.stop = function() {
@@ -589,6 +610,7 @@
 
         //window.requestAnimationFrame( curlify.render )
         curlify.intervalId = window.setInterval( curlify.render, 1000/60 )
+        //curlify.render()
       }
     )
   }
