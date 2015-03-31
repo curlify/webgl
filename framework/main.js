@@ -49,13 +49,13 @@
     return cam
   };
 
-  function initWebGL(canvas) {
+  function initWebGL(canvas,parameters) {
     gl = null;
     
     try {
       // Try to grab the standard context. If it fails, fallback to experimental.
       // {premultipliedAlpha: false}
-      gl = canvas.getContext("webgl"/*, {alpha: false}*/) || canvas.getContext("experimental-webgl");
+      gl = canvas.getContext("webgl", parameters) || canvas.getContext("experimental-webgl");
     }
     catch(e) {}
     
@@ -553,7 +553,7 @@
 
     resizeCanvas()
 
-    gl = initWebGL(glcanvas);
+    gl = initWebGL(glcanvas,parameters.glparameters);
 
     curlify.localVars.gl = gl
     // Only continue if WebGL is available and working  
