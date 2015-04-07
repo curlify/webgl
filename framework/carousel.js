@@ -36,7 +36,8 @@
 
         container.contentsize = {width:container.size.width, height:container.size.height}
         container.inertia = 5
-        container.swipespeed = screenWidth
+        container.swipespeed = 1
+        container.swipefunc = animator.outQuad
         container.movespeed = 1.0
         container.movethreshold = 60
         container.itemsize = screenWidth
@@ -178,6 +179,16 @@
           if (instant) instance.position.x = instance.targetposition.x
           container.selecteditem = item
           if (container.carouselmoved != null) container.carouselmoved(item+1)
+        }
+
+        container.swipeRight = function(speed) {
+          //console.log("swipeRight",speed)
+          if (container.focused) instance.targetposition.x = instance.targetposition.x-container.swipefunc(0,container.swipespeed,speed)
+        }
+
+        container.swipeLeft = function(speed) {
+          //console.log("swipeRight",speed)
+          if (container.focused) instance.targetposition.x = instance.targetposition.x+container.swipefunc(0,container.swipespeed,speed)
         }
 
         container.step = function(timedelta) {

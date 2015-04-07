@@ -89,6 +89,17 @@
           if (instance.carouselmoved != null) instance.carouselmoved(instance.selecteditem)
         }
 
+        instance.swipeLeft = null
+        instance.swipeDown = null
+
+        instance.swipeDown = function(speed) {
+          if (instance.focused) instance.instance.targetposition.x = instance.instance.targetposition.x-instance.swipefunc(0,instance.swipespeed,speed)
+        }
+
+        instance.swipeUp = function(speed) {
+          if (instance.focused) instance.instance.targetposition.x = instance.instance.targetposition.x+instance.swipefunc(0,instance.swipespeed,speed)
+        }
+
         instance.moveto = function(item,instant) {
           instance.instance.targetposition.y = -item
           if (instant) instance.instance.position.y = instance.instance.targetposition.y
