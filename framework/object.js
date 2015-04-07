@@ -17,6 +17,7 @@
         eval(curlify.extract(curlify.localVars,"curlify.localVars"))
         
         // create as monitored objects for animation optimisations (ie. don't draw if not needed)
+        // -- turns out this is quite slow :(
         /*
         var monitored_vec3 = function(x,y,z) 
         {
@@ -249,6 +250,35 @@
               if (this.children[i].active) used = this.children[i].release(x,y)
             }
             
+            return used
+          },
+
+          swipe : function(dragdir) {
+
+            var used = false
+            for (var i=this.children.length-1; i >= 0; i--) {
+              if (this.children[i].active) used = this.children[i].swipe(dragdir)
+            }
+
+            var xspeed = Math.abs(dragdir.x)
+            var yspeed = Math.abs(dragdir.y)
+
+            //console.log("swipe",xspeed,yspeed)
+            
+            if (xspeed > yspeed) {
+              if (dragdir.x > 0) {
+                return this.swipeLeft ? this.swipeLeft(xspeed) : false
+              } else {
+                return this.swipeRight ? this.swipeRight(xspeed) : false
+              }
+            } else {
+              if (dragdir.y > 0) {
+                return this.swipeUp ? this.swipeUp(yspeed) : false
+              } else {
+                return this.swipeDown ? this.swipeDown(yspeed) : false
+              }
+            }
+
             return used
           },
 

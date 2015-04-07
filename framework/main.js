@@ -15,8 +15,15 @@
   var glcanvas
   var glclearcolor = 0.0
   var aspectratioZoom = true
+
   var touch = false
   var lasttouch = null
+
+  var lastPointerPosition = {x:0,y:0}
+  var pointerTargetDirection = {x:0,y:0}
+  var pointerDirection = {x:0,y:0}
+  var pointerTimestamp = 0
+
   var renderRequested = true
   var imageid = 0
   var running = false
@@ -71,15 +78,72 @@
     return gl;
   }
 
+  function swipestart(rel) {
+    pointerTimestamp = sys.timestamp()
+
+    lastPointerPosition.x = rel.x
+    lastPointerPosition.y = rel.y
+    
+    pointerDirection.x = 0
+    pointerDirection.y = 0
+
+    pointerTargetDirection.x = 0
+    pointerTargetDirection.y = 0
+  }
+  function swipedrag(rel) {
+    var timedelta = sys.timestamp()-pointerTimestamp
+
+    var xmove = rel.x-lastPointerPosition.x
+    var ymove = rel.y-lastPointerPosition.y
+
+    var td = Math.max(timedelta,16.66)
+    pointerTargetDirection.x = xmove/(td/16.66)
+    pointerTargetDirection.y = ymove/(td/16.66)
+
+    if (pointerDirection.y < 0) pointerDirection.y = Math.min(pointerDirection.y,pointerTargetDirection.y)
+    if (pointerDirection.y > 0) pointerDirection.y = Math.max(pointerDirection.y,pointerTargetDirection.y)
+    if (pointerDirection.x < 0) pointerDirection.x = Math.min(pointerDirection.x,pointerTargetDirection.x)
+    if (pointerDirection.x > 0) pointerDirection.x = Math.max(pointerDirection.x,pointerTargetDirection.x)
+
+    var targetdir = pointerTargetDirection.y/Math.abs(pointerTargetDirection.y)
+    var dir = pointerDirection.y/Math.abs(pointerDirection.y)
+    if (targetdir != dir) pointerDirection.y = pointerTargetDirection.y
+
+    var targetdir = pointerTargetDirection.x/Math.abs(pointerTargetDirection.x)
+    var dir = pointerDirection.x/Math.abs(pointerDirection.x)
+    if (targetdir != dir) pointerDirection.x = pointerTargetDirection.x
+
+    lastPointerPosition.x = rel.x
+    lastPointerPosition.y = rel.y
+  }
+  function swipeend(position) {
+    var xmax = viewWidth*0.08
+    var ymax = viewHeight*0.07
+
+    var xdir = pointerDirection.x
+    if (xdir > 0) xdir = Math.min(1.0,xdir/xmax)
+    if (xdir < 0) xdir = Math.max(-1.0,xdir/xmax)
+
+    var ydir = pointerDirection.y
+    if (ydir > 0) ydir = Math.min(1.0,ydir/ymax)
+    if (ydir < 0) ydir = Math.max(-1.0,ydir/ymax)
+
+    var swipedir = {x:xdir,y:ydir}
+    //console.log("swipeend",swipedir,pointerDirection,xmax,ymax)
+    return swipedir
+  }
+
   function mousedown(e) {
     if (scene.isAnimating() || touch == true) return
     var tgt = e.currentTarget.getBoundingClientRect()
-    console.log("mousedown : "+e.clientX+","+e.clientY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
+    //console.log("mousedown : "+e.clientX+","+e.clientY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
-    target.drag((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
+    var rel = {x: (e.clientX-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY-tgt.top-layoutOffset.y)*layoutScale.y}
+    swipestart(rel)
+    target.press(rel.x,rel.y)
+    target.drag(rel.x,rel.y)
   }
 
   function mouseup(e) {
@@ -90,7 +154,13 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
+    var rel = {x: (e.clientX-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY-tgt.top-layoutOffset.y)*layoutScale.y}
+    var swipedir = swipeend(rel)
+    if (target.swipe(swipedir)) {
+      target:resetpress()
+    } else {
+      target.release(rel.x,rel.y)
+    }
   }
 
   function mouseout(e) {
@@ -105,7 +175,9 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.clientX-tgt.left-layoutOffset.x)*layoutScale.x,(e.clientY-tgt.top-layoutOffset.y)*layoutScale.y)
+      var rel = {x: (e.clientX-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY-tgt.top-layoutOffset.y)*layoutScale.y}
+      swipedrag(rel)
+      target.drag(rel.x,rel.y)
     }
   }
 
@@ -116,8 +188,10 @@
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    target.press((e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
-    target.drag((e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
+    var rel = {x: (e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+    swipestart(rel)
+    target.press(rel.x,rel.y)
+    target.drag(rel.x,rel.y)
     lasttouch = e
   }
 
@@ -129,7 +203,13 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    target.release((lasttouch.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(lasttouch.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
+    var rel = {x: (lasttouch.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (lasttouch.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+    var swipedir = swipeend(rel)
+    if (target.swipe(swipedir)) {
+      target:resetpress()
+    } else {
+      target.release(rel.x,rel.y)
+    }
   }
 
   function touchmove(e) {
@@ -140,7 +220,9 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      target.drag((e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x,(e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y)
+      var rel = {x: (e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+      swipedrag(rel)
+      target.drag(rel.x,rel.y)
     }
     lasttouch = e
   }
