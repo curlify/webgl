@@ -2,6 +2,7 @@ uglifyjs \
 jszip.min.js \
 jszip-utils.min.js \
 gl-matrix-min.js \
+webgl-obj-loader.js \
 framework/curlify.js \
 framework/glutils.js \
 framework/sys.js \
@@ -25,6 +26,7 @@ framework/scrollable.js \
 framework/text.js \
 framework/jsonfile.js \
 framework/video.js \
+framework/mesh.js \
 framework/main.js \
 -o curlify.min.js \
 -m \
