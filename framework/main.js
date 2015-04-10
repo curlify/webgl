@@ -29,6 +29,8 @@
   var running = false
   var appendedElements = []
 
+  var allowDefaultPointerEvent = false
+
 
   // PRIVATE FUNCTIONS
   function createProjection(right, top, near, far) {
@@ -182,6 +184,7 @@
   }
 
   function touchstart(e) {
+    allowDefaultPointerEvent = false
     if (scene.isAnimating() || touch == true) return
     var tgt = e.currentTarget.getBoundingClientRect()
     //console.log("touchstart : "+e.touches[0].pageX+","+e.touches[0].pageY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
@@ -193,9 +196,11 @@
     target.press(rel.x,rel.y)
     target.drag(rel.x,rel.y)
     lasttouch = e
+    if (allowDefaultPointerEvent == false) e.preventDefault()
   }
 
   function touchend(e) {
+    allowDefaultPointerEvent = false
     scene.resetPointerStealer()
     if (scene.isAnimating() || touch == false ) return
     //console.log("touchend : "+lasttouch.touches[0].pageX+","+lasttouch.touches[0].pageY)
@@ -213,7 +218,6 @@
   }
 
   function touchmove(e) {
-    e.preventDefault()
     if (scene.isAnimating() || touch == false) return
     //console.log("touchmove : "+e.touches[0].pageX+","+e.touches[0].pageY)
     var tgt = e.currentTarget.getBoundingClientRect()
@@ -225,6 +229,7 @@
       target.drag(rel.x,rel.y)
     }
     lasttouch = e
+    if (allowDefaultPointerEvent == false) e.preventDefault()
   }
 
   function deviceMotionHandler(e) {
