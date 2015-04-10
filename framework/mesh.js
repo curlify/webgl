@@ -74,6 +74,7 @@
       new : function(source,texture) {
 
         var gl = curlify.localVars.gl
+        var zipfile = curlify.localVars.zipfile
 
         var instance = object.new("mesh : "+source)
         instance.depthtest = true
@@ -94,6 +95,7 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
             instance.loaded = true
           }
           img.onerror = function() {
@@ -105,55 +107,66 @@
           instance.loaded = true
         }
 
-        OBJ.downloadMeshes( {
-          "model" : source,
-        }, function(meshes) {
+        if (zipfile != null) {
 
-          var mesh = meshes.model
-          OBJ.initMeshBuffers(gl, mesh);
+          console.log("zipfile load",source)
+          var zipEntry = zipfile.file(source)
+          instance.mesh = new OBJ.Mesh(zipEntry.asBinary())
+          OBJ.initMeshBuffers(gl, instance.mesh);
 
-          instance.draw = function() {
-            //console.log("drawing",mesh)
-            if (instance.loaded == false) return
+        } else {
 
-            gl.useProgram(this.glProgram.program);
+          console.log("download load",texture)
+          OBJ.downloadMeshes( {
+            "model" : source,
+          }, function(meshes) {
+            instance.mesh = meshes.model
+            OBJ.initMeshBuffers(gl, instance.mesh);
+          });
 
-            gl.activeTexture(gl.TEXTURE0)
-            gl.bindTexture(gl.TEXTURE_2D, instance.texture)
-            gl.uniform1i(this.glProgram.u_texture_handle, 0)
+        }
 
-            gl.uniform1f(this.glProgram.u_alpha_handle, this.absolutealpha());
+        instance.draw = function() {
+          //console.log("drawing",mesh)
+          if (this.loaded == false || this.mesh == null) return
 
-            gl.uniformMatrix4fv(this.glProgram.u_projection_handle, false, this.projectionMatrix);
-            gl.uniformMatrix4fv(this.glProgram.u_view_handle, false, this.viewMatrix);
-            gl.uniformMatrix4fv(this.glProgram.u_model_handle, false, this.modelMatrix);
-            
-            gl.enableVertexAttribArray(this.glProgram.a_position_handle);
-            gl.enableVertexAttribArray(this.glProgram.a_normal_handle);
+          gl.useProgram(this.glProgram.program);
+
+          gl.activeTexture(gl.TEXTURE0)
+          gl.bindTexture(gl.TEXTURE_2D, instance.texture)
+          gl.uniform1i(this.glProgram.u_texture_handle, 0)
+
+          gl.uniform1f(this.glProgram.u_alpha_handle, this.absolutealpha());
+
+          gl.uniformMatrix4fv(this.glProgram.u_projection_handle, false, this.projectionMatrix);
+          gl.uniformMatrix4fv(this.glProgram.u_view_handle, false, this.viewMatrix);
+          gl.uniformMatrix4fv(this.glProgram.u_model_handle, false, this.modelMatrix);
+          
+          gl.enableVertexAttribArray(this.glProgram.a_position_handle);
+          gl.enableVertexAttribArray(this.glProgram.a_normal_handle);
+          gl.enableVertexAttribArray(this.glProgram.a_tex_coordinate_handle);
+
+          // now to render the mesh
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.mesh.vertexBuffer);
+          gl.vertexAttribPointer(this.glProgram.a_position_handle, this.mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+          if (!this.mesh.textures.length) {
+            gl.disableVertexAttribArray(this.glProgram.a_tex_coordinate_handle);
+          } else {
+            // if the texture vertexAttribArray has been previously
+            // disabled, then it needs to be re-enabled
             gl.enableVertexAttribArray(this.glProgram.a_tex_coordinate_handle);
-
-            // now to render the mesh
-            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
-            gl.vertexAttribPointer(this.glProgram.a_position_handle, mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-            if (!mesh.textures.length) {
-              gl.disableVertexAttribArray(this.glProgram.a_tex_coordinate_handle);
-            } else {
-              // if the texture vertexAttribArray has been previously
-              // disabled, then it needs to be re-enabled
-              gl.enableVertexAttribArray(this.glProgram.a_tex_coordinate_handle);
-              gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);
-              gl.vertexAttribPointer(this.glProgram.a_tex_coordinate_handle, mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
-            }
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
-            gl.vertexAttribPointer(this.glProgram.a_normal_handle, mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-            gl.drawElements(gl.TRIANGLES, mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.mesh.textureBuffer);
+            gl.vertexAttribPointer(this.glProgram.a_tex_coordinate_handle, this.mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
           }
 
-        });
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.mesh.normalBuffer);
+          gl.vertexAttribPointer(this.glProgram.a_normal_handle, this.mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.indexBuffer);
+          gl.drawElements(gl.TRIANGLES, this.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+        }
 
         instance.glProgram = this.default_program.getProgram()
 
