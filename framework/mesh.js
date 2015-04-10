@@ -118,6 +118,10 @@
 
             gl.useProgram(this.glProgram.program);
 
+            gl.activeTexture(gl.TEXTURE0)
+            gl.bindTexture(gl.TEXTURE_2D, instance.texture)
+            gl.uniform1i(this.glProgram.u_texture_handle, 0)
+
             gl.uniform1f(this.glProgram.u_alpha_handle, this.absolutealpha());
 
             gl.uniformMatrix4fv(this.glProgram.u_projection_handle, false, this.projectionMatrix);
