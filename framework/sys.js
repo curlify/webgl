@@ -8,7 +8,7 @@
 
     return {
       timestamp : function() {
-        return new Date().getTime();
+        return Date.now();
       },
 
       ismobile : {
