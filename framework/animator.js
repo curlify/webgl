@@ -130,7 +130,7 @@ var animator = (function() {
         resume : function() {
           for (var k in this.animations) {
             this.animations [k].paused = false
-            this.animations [k].deadline = this.animations [k].deadline + (sys.timestamp() - self.animations [k].pausetimestamp)
+            this.animations [k].deadline = this.animations [k].deadline + (sys.timestamp() - this.animations [k].pausetimestamp)
           }
           //window.requestAnimationFrame(this.step)
           curlify.requestRender()
