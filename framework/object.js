@@ -84,6 +84,7 @@
           blend : true,
           drawbackside : false,
           depthtest : false,
+          disableGlStateUpdates : false, // optimisation for particles
 
           projectionMatrix : camera.projectionMatrix,
           viewMatrix : camera.viewMatrix,
@@ -133,6 +134,10 @@
               mat4.multiply( this.modelViewMatrix, this.modelViewMatrix, this.modelMatrix );
             }
 
+          },
+
+          updateGlStates : function() {
+            
             if (this.depthtest) {
               gl.enable( gl.DEPTH_TEST )
               gl.depthFunc( gl.LEQUAL )
@@ -156,19 +161,21 @@
               gl.enable( gl.CULL_FACE )
               gl.cullFace(gl.FRONT)
             }
+            
 
           },
 
           stepTree : function() {
             //console.log("stepTree : "+this.identifier+" children : "+this.children.length)
             
-            var timedelta = Math.max(1,Math.min(sys.timestamp()-this.laststep,60))
-            this.laststep = sys.timestamp()
-
             this.anim.step()
 
             if (this.preStep != null) this.preStep()
-            if (this.step != null) this.step(timedelta)
+            if (this.step != null) {
+              var timedelta = Math.max(1,Math.min(sys.timestamp()-this.laststep,60))
+              this.laststep = sys.timestamp()
+              this.step(timedelta)
+            }
 
             for (var i = 0; i < this.children.length; i++) {
               this.children[i].stepTree();
@@ -187,6 +194,8 @@
             if (this.visible == false) return
 
             this.update();
+            if (this.disableGlStateUpdates != true) this.updateGlStates()
+
             if (this.preDraw != null) this.preDraw();
             if (this.draw != null) this.draw();
             if (this.reverseDrawOrder) {
@@ -369,6 +378,19 @@
           deactivate : function() {
             this.active = false
             if (this.postDeactivate != null) this.postDeactivate()
+          },
+
+          removeSelf : function() {
+            if (this.parent == null) return
+
+            for (var i=0;i<this.parent.children.length;i++) {
+              if (this.parent.children[i] == this) {
+                //print("removing: "..obj.identifier.. " from "..obj.parent.identifier)
+                this.parent.children.splice(i,1)
+                break
+              }
+            }
+
           },
 
         }
