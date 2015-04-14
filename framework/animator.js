@@ -53,7 +53,7 @@ var animator = (function() {
               deadline : sys.timestamp() + config.start + config.time,
               config : config,
               init : init,
-            }        
+            }
           )
 
           //console.log("request step",this.animations)
@@ -69,7 +69,12 @@ var animator = (function() {
 
           var requested = false
 
-          for (var key in referenceForStep.animations) {
+          var key = null
+          
+          //for (var key in referenceForStep.animations) {
+          for (var k=0;k<referenceForStep.animations.length;k++) {
+            key = k
+
             var animation = referenceForStep.animations[key]
             var deadline = animation.deadline
             var pos = 0
@@ -100,6 +105,7 @@ var animator = (function() {
             }
             //sys.requestRepaint()
           }
+
           
           //remove dead animations
           for (i = dead.length-1; i >= 0; i--) {
