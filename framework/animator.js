@@ -65,13 +65,9 @@ var animator = (function() {
         step : function() {
 
           var dead = []
-          var now = sys.timestamp()
+          var now = Date.now()
 
-          var requested = false
-
-          var key = null
-          
-          //for (var key in referenceForStep.animations) {
+          var key = null          
           for (var k=0;k<referenceForStep.animations.length;k++) {
             key = k
 
@@ -93,26 +89,19 @@ var animator = (function() {
             }
 
             pos = Math.max(pos, 0.00001)
+
             for (var key in animation.init) {
               initial = animation.init[key]
               animation.target[key] = animation.config.ease(initial, animation.config[key], pos)
             }
             
-            if (requested == false) {
-              //window.requestAnimationFrame(referenceForStep.step)
-              requested = true
-              curlify.requestRender()
-            }
-            //sys.requestRepaint()
           }
 
           
           //remove dead animations
           for (i = dead.length-1; i >= 0; i--) {
             var completeFunc = referenceForStep.animations[dead[i]].config.onComplete
-            //delete this.animations[dead[i]]
             referenceForStep.animations.splice(dead[i],1)
-            //console.log("animations.length",referenceForStep.animations.length)
             if (completeFunc != null) {
               completeFunc()
             }
