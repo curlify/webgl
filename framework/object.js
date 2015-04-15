@@ -67,6 +67,7 @@
           position : {x:0,y:0,z:0},//new monitored_vec3,//
           rotate : {x:0,y:0,z:0},//new monitored_vec3,//
           scale : {x:1,y:1,z:1},//new monitored_vec3(1,1,1),//
+          origo : {x:0,y:0,z:0},//new monitored_vec3,//
           size : {width:width==null?screenWidth:width, height:height==null?screenHeight:height},//new monitored_size(width,height),//
           children : [],
           active : true,
@@ -90,8 +91,8 @@
           viewMatrix : camera.viewMatrix,
           modelMatrix : mat4.create(),
           modelViewMatrix : mat4.create(),
+          origoMatrix : mat4.create(),
           translateScale : camera.translateScale,
-          identityMatrix : mat4.create(),
 
           anim : animator.new(),
           timervalue : 0,
@@ -106,7 +107,7 @@
 
           updateModelMatrix : function() {
             var modelMatrix = this.modelMatrix;
-            mat4.copy(modelMatrix,this.identityMatrix);
+            mat4.identity(modelMatrix);
             if (this.position.x != 0 || this.position.y != 0 || this.position.z != 0) {
               var translateScale = screenWidth/(this.translateScale*2)
               mat4.translate(modelMatrix,modelMatrix,vec3.clone([this.position.x/translateScale,-this.position.y/translateScale,this.position.z/translateScale]) );
@@ -115,6 +116,10 @@
             if (this.rotate.y != 0) mat4.rotateY(modelMatrix,modelMatrix,-this.rotate.y);
             if (this.rotate.x != 0) mat4.rotateX(modelMatrix,modelMatrix,-this.rotate.x);
             if (this.scale.x != 1 || this.scale.y != 1 || this.scale.z != 1) mat4.scale(modelMatrix,modelMatrix,vec3.clone([this.scale.x,this.scale.y,this.scale.z]));
+            if (this.origo.x != 0 || this.origo.y != 0 || this.origo.z != 0) {
+              var translateScale = screenWidth/(this.translateScale*2)
+              mat4.translate(modelMatrix,modelMatrix,vec3.clone([-this.origo.x/translateScale,this.origo.y/translateScale,-this.origo.z/translateScale]) );
+            }
 
             this.modelMatrix = modelMatrix;
           },
@@ -127,6 +132,12 @@
               mvMatrix = this.parent.modelViewMatrix;
             }
             this.viewMatrix = mvMatrix;
+            if (this.origo.x != 0 || this.origo.y != 0 || this.origo.z != 0) {
+              var translateScale = screenWidth/(this.translateScale*2)
+              mat4.identity(this.origoMatrix)
+              mat4.translate(this.origoMatrix,this.origoMatrix,vec3.clone([this.origo.x/translateScale,-this.origo.y/translateScale,this.origo.z/translateScale]) );
+              mat4.multiply(this.viewMatrix, this.viewMatrix, this.origoMatrix )
+            }
             this.updateModelMatrix();
 
             if (this.children.length > 0) {
@@ -385,7 +396,7 @@
 
             for (var i=0;i<this.parent.children.length;i++) {
               if (this.parent.children[i] == this) {
-                //print("removing: "..obj.identifier.. " from "..obj.parent.identifier)
+                console.log("removing: "+this.identifier+" from "+this.parent.identifier)
                 this.parent.children.splice(i,1)
                 break
               }
