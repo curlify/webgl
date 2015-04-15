@@ -71,7 +71,7 @@
 
         instance.updateModelMatrix = function() {
           var modelMatrix = this.modelMatrix;
-          mat4.copy(modelMatrix,this.identityMatrix);
+          mat4.identity(modelMatrix);
           if (this.position.x != 0 || this.position.y != 0 || this.position.z != 0) {
             var translateScale = screenWidth/(this.translateScale*2)
             mat4.translate(modelMatrix,modelMatrix,[this.position.x/translateScale,-this.position.y/translateScale,this.position.z/translateScale] );
