@@ -1,3 +1,9 @@
+/**
+ @preserve
+ https://github.com/frenchtoast747/webgl-obj-loader
+ Copyright (c) 2013 Aaron Boman and aaronboman.com
+*/
+
 (function (scope, undefined) {
   'use strict';
 
