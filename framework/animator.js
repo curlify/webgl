@@ -20,7 +20,6 @@ var animator = (function() {
 
     new : function() {
 
-      var referenceForStep = null
       var instance = {
 
         animations : [],
@@ -68,10 +67,10 @@ var animator = (function() {
           var now = Date.now()
 
           var key = null          
-          for (var k=0;k<referenceForStep.animations.length;k++) {
+          for (var k=0;k<this.animations.length;k++) {
             key = k
 
-            var animation = referenceForStep.animations[key]
+            var animation = this.animations[key]
             var deadline = animation.deadline
             var pos = 0
             
@@ -90,18 +89,19 @@ var animator = (function() {
 
             pos = Math.max(pos, 0.00001)
 
-            for (var key in animation.init) {
-              initial = animation.init[key]
-              animation.target[key] = animation.config.ease(initial, animation.config[key], pos)
+            for (var tgt in animation.init) {
+              initial = animation.init[tgt]
+              animation.target[tgt] = animation.config.ease(initial, animation.config[tgt], pos)
             }
+            
             
           }
 
           
           //remove dead animations
           for (i = dead.length-1; i >= 0; i--) {
-            var completeFunc = referenceForStep.animations[dead[i]].config.onComplete
-            referenceForStep.animations.splice(dead[i],1)
+            var completeFunc = this.animations[dead[i]].config.onComplete
+            this.animations.splice(dead[i],1)
             if (completeFunc != null) {
               completeFunc()
             }
@@ -134,7 +134,6 @@ var animator = (function() {
         },
       }
 
-      referenceForStep = instance
       return instance
     }
 
