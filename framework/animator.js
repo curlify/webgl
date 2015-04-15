@@ -31,7 +31,9 @@ var animator = (function() {
 
           if (config.start == null) config.start = 0;
 
-          var init = {}
+          var keys = []
+          var init = []
+          var final = []
           // gather initial values
           for (var key in config) {
             var value = config[key]
@@ -40,18 +42,22 @@ var animator = (function() {
               if (target[key] == null) {
                 console.log("ERROR: Animated property cannot be initially nil : "+key)
               } else {
-                init[key] = target[key]
+                keys.push( key )
+                init.push( target[key] )
+                final.push( value )
               }
             }
           }
 
           this.animations.push(
             {
+              keys : keys,
               target : target,
               start : sys.timestamp() + config.start,
               deadline : sys.timestamp() + config.start + config.time,
               config : config,
               init : init,
+              final : final,
             }
           )
 
@@ -89,9 +95,11 @@ var animator = (function() {
 
             pos = Math.max(pos, 0.00001)
 
-            for (var tgt in animation.init) {
-              initial = animation.init[tgt]
-              animation.target[tgt] = animation.config.ease(initial, animation.config[tgt], pos)
+            for (var i=0;i<animation.keys.length;i++){
+              var animkey = animation.keys[i]
+              var initial = animation.init[i]
+              var finalval = animation.final[i]
+              animation.target[animkey] = animation.config.ease( initial, finalval, pos )
             }
             
             
@@ -127,7 +135,9 @@ var animator = (function() {
 
         stop : function() {
           for (var k in this.animations) {
-            this.animations [k].init = {}
+            this.animations [k].keys = []
+            this.animations [k].init = []
+            this.animations [k].final = []
             this.animations [k].config.onComplete = null
           }
           this.animations = []
