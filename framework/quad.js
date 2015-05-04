@@ -50,7 +50,7 @@
               \
               void main() {\
                 vec4 color = texture2D(u_texture, v_tex_coord);\
-                gl_FragColor = color * u_alpha;\
+                gl_FragColor = vec4(color.rgb, color.a * u_alpha);\
               }\
             ',
             type: "x-shader/x-fragment"
@@ -77,7 +77,7 @@
           this.buffer.numItems = 4;
 
           gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-          vertices = [
+          var vertices = [
             -1, -1, 0, 0,
              1, -1, 1, 0,
             -1,  1, 0, 1,
@@ -114,7 +114,7 @@
 
         instance.draw = function() {
 
-          if (instance.texture == null) {
+          if (this.texture == null) {
             //console.log("texture not loaded",this.identifier)
             return
           }
@@ -122,7 +122,7 @@
           gl.useProgram(this.glProgram.program);
 
           gl.activeTexture(gl.TEXTURE0)
-          gl.bindTexture(gl.TEXTURE_2D, instance.texture)
+          gl.bindTexture(gl.TEXTURE_2D, this.texture)
           gl.uniform1i(this.glProgram.u_texture_handle, 0)
 
           gl.uniform1f(this.glProgram.u_alpha_handle, this.absolutealpha());

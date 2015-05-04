@@ -51,7 +51,7 @@
               \
               void main() {\
                 vec4 color = texture2D(u_texture, v_tex_coord);\
-                gl_FragColor = color * u_alpha;\
+                gl_FragColor = vec4(color.rgb, color.a * u_alpha);\
               }\
             ',
             type: "x-shader/x-fragment"
