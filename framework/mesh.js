@@ -82,48 +82,65 @@
 
         instance.loaded = false
         if (texture != null) {
-          var img = image.loadImage(texture)
-          img.onload = function() {
-            instance.texture = gl.createTexture();
 
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-            gl.bindTexture(gl.TEXTURE_2D, instance.texture);
+          if ( texture instanceof Object ) {
+            if (texture.texture != null ) {
+              instance.texture = texture.texture
+              instance.loaded = true
+            } else {
+              console.log("ERROR: texture failed to load from object "+texture)
+            }
+          } else {
+            var img = image.loadImage(texture)
+            img.onload = function() {
+              instance.texture = gl.createTexture();
 
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+              gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+              gl.bindTexture(gl.TEXTURE_2D, instance.texture);
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-            instance.loaded = true
-          }
-          img.onerror = function() {
-            console.log("ERROR: texture load failed for mesh "+source+" : "+texture)
-            instance.loaded = true
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+              gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+              gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+              gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+              instance.loaded = true
+            }
+            img.onerror = function() {
+              console.log("ERROR: texture load failed for mesh "+source+" : "+texture)
+              instance.loaded = true
+            }
           }
         } else {
           console.log("WARNING: no texture defined for mesh "+source)
           instance.loaded = true
         }
 
-        if (zipfile != null) {
+        if ( source instanceof Object ) {
 
-          console.log("zipfile load",source)
-          var zipEntry = zipfile.file(source)
-          instance.mesh = new OBJ.Mesh(zipEntry.asBinary())
-          OBJ.initMeshBuffers(gl, instance.mesh);
+          instance.mesh = source.mesh
 
         } else {
 
-          console.log("download load",texture)
-          OBJ.downloadMeshes( {
-            "model" : source,
-          }, function(meshes) {
-            instance.mesh = meshes.model
-            OBJ.initMeshBuffers(gl, instance.mesh);
-          });
+          if (zipfile != null) {
 
+            console.log("zipfile load",source)
+            var zipEntry = zipfile.file(source)
+            instance.mesh = new OBJ.Mesh(zipEntry.asBinary())
+            OBJ.initMeshBuffers(gl, instance.mesh);
+
+          } else {
+
+            console.log("download load",texture)
+            OBJ.downloadMeshes( {
+              "model" : source,
+            }, function(meshes) {
+              instance.mesh = meshes.model
+              OBJ.initMeshBuffers(gl, instance.mesh);
+            });
+
+          }
         }
 
         instance.draw = function() {
