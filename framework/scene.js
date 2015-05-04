@@ -32,6 +32,7 @@
       if (Math.abs(diff) > limit) {
         var dir = diff / Math.abs(diff)
         target[value] = move(target[value],source[value]+(dir*360),target.inertia,td)
+
         if (dir==-1 && target[value] < -180) target[value] = target[value]+360
         if (dir==1 && target[value] > 180) target[value] = target[value]-360
       } else {
@@ -42,6 +43,8 @@
     return {
 
       render : function() {
+
+        var gl = curlify.localVars.gl
 
         var td = sys.timestamp()-lastframe
         lastframe = sys.timestamp()
@@ -141,6 +144,12 @@
       addFboUpdate : function(obj) {
         fboUpdateList.push(obj)
       },
+
+      layoutChanged : function() {
+        for (var i=0;i<scenestack.length;i++) {
+          scenestack[i].layoutChangedTree()
+        }
+      }
     }
 
   })()

@@ -219,6 +219,15 @@
 
           },
 
+          layoutChangedTree : function() {
+
+            for (var i=0;i<this.children.length;i++) {
+              this.children[i].layoutChangedTree()
+            }
+            if (this.layoutChanged != null) this.layoutChanged()
+
+          },
+
           press : function(x,y) {
 
             var used = false

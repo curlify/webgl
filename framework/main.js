@@ -149,8 +149,10 @@
   }
 
   function mouseup(e) {
-    scene.resetPointerStealer()
-    if (scene.isAnimating() || touch == false) return
+    if (scene.isAnimating() || touch == false) {
+      scene.resetPointerStealer()
+      return
+    }
     console.log("mouseup : "+e.clientX+","+e.clientY)
     var tgt = e.currentTarget.getBoundingClientRect()
     touch = false
@@ -163,6 +165,7 @@
     } else {
       target.release(rel.x,rel.y)
     }
+    scene.resetPointerStealer()
   }
 
   function mouseout(e) {
@@ -185,6 +188,7 @@
 
   function touchstart(e) {
     allowDefaultPointerEvent = false
+    //console.log("touchstart",touch)
     if (scene.isAnimating() || touch == true) return
     var tgt = e.currentTarget.getBoundingClientRect()
     //console.log("touchstart : "+e.touches[0].pageX+","+e.touches[0].pageY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
@@ -192,6 +196,7 @@
     var target = scene.getPointerUser()
     if (target == null) return
     var rel = {x: (e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+    //console.log("rel: "+rel.x,rel.y)
     swipestart(rel)
     target.press(rel.x,rel.y)
     target.drag(rel.x,rel.y)
@@ -201,8 +206,10 @@
 
   function touchend(e) {
     allowDefaultPointerEvent = false
-    scene.resetPointerStealer()
-    if (scene.isAnimating() || touch == false ) return
+    if (scene.isAnimating() || touch == false ) {
+      scene.resetPointerStealer()
+      return
+    }
     //console.log("touchend : "+lasttouch.touches[0].pageX+","+lasttouch.touches[0].pageY)
     var tgt = e.currentTarget.getBoundingClientRect()
     touch = false
@@ -215,6 +222,7 @@
     } else {
       target.release(rel.x,rel.y)
     }
+    scene.resetPointerStealer()
   }
 
   function touchmove(e) {
@@ -259,6 +267,7 @@
     //console.log("resizeCanvas",glcanvas)
     var realToCSSPixels = window.devicePixelRatio || 1;
     realToCSSPixels = 1
+    // TODO: fix pointers / fbos - layout is wrong in other words
 
     var width = Math.floor(glcanvas.clientWidth * realToCSSPixels);
     var height = Math.floor(glcanvas.clientHeight * realToCSSPixels);
@@ -290,8 +299,8 @@
     layoutOffset.x = (width-layoutWidth)/2,
     layoutOffset.y = (height-layoutHeight)/2
 
-    glcanvas.width = glcanvas.clientWidth
-    glcanvas.height = glcanvas.clientHeight
+    glcanvas.width = glcanvas.clientWidth//width
+    glcanvas.height = glcanvas.clientHeight//height
 
     //console.log("resized",glcanvas.width,glcanvas.height,viewWidth,viewHeight)
     curlify.localVars.layoutWidth = layoutWidth
@@ -307,6 +316,7 @@
 
     console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" "+screenWidth+"x"+screenHeight+" "+layoutWidth+"x"+layoutHeight+" "+glcanvas.width+","+glcanvas.height)
 
+    scene.layoutChanged()
   }
   curlify.resizeCanvas = resizeCanvas
 
@@ -354,9 +364,10 @@
     }
   }
 
-  function createCORSRequest(method, url) {
+  function createCORSRequest(method, url, params) {
     return new Promise(function(resolve, reject) {
       var xhr = new XMLHttpRequest();
+
       if ("withCredentials" in xhr) {
 
         // Check if the XMLHttpRequest object has a "withCredentials" property.
@@ -396,7 +407,8 @@
         reject(Error("cors request failed with 'Network Error'"));
       };  
 
-      xhr.send()      
+      if (params != null) xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      xhr.send(params)      
     })
   }
 
@@ -695,8 +707,9 @@
         zipfile = null
         curlify.localVars.zipfile = null
 
+        var framerate = (parameters.framerate ? parameters.framerate : 60)
         //window.requestAnimationFrame( curlify.render )
-        curlify.intervalId = window.setInterval( curlify.render, 1000/60 )
+        curlify.intervalId = window.setInterval( curlify.render, 1000/framerate )
         //curlify.render()
       }
     )
