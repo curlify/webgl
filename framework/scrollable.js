@@ -113,6 +113,9 @@
           var xlimit = -(container.contentsize.width-container.size.width)+container.zeroposition
           var ylimit = -(container.contentsize.height-container.size.height)
 
+          if (container.contentsize.width < container.size.width) xlimit = 0
+          if (container.contentsize.height < container.size.height) ylimit = 0
+
           var td = timedelta
           if (td > 66) td = 66
 
