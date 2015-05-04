@@ -22,7 +22,7 @@
         
         var container = focusable.new(ident,width,height);
 
-        var coverflow = { name:"coverflow", show:[], hide:[] }
+        var coverflow = { name:"coverflow", show:[], hide:[], order_draw:true }
         coverflow.show.push( {target:'position.x',startposition:screenWidth*1.0,endposition:0,func:animator.linear} )
         coverflow.show.push( {target:'rotate.y',startposition:Math.PI*0.8,endposition:0,func:animator.linear} )
         coverflow.show.push( {target:'scale.x',startposition:0.6,endposition:1,func:animator.linear} )
@@ -47,7 +47,7 @@
         container.bounceOnWrap = false
         container.alwaysmove = false
         container.nevermove = false
-        container.selecteditem = 1
+        container.selecteditem = 0
         container.moveToSelectedItem = true
 
         var instance = container.add( object.new("carousel") )
@@ -178,6 +178,12 @@
           instance.targetposition.x = -item
           if (instant) instance.position.x = instance.targetposition.x
           container.selecteditem = item
+          if (container.selecteditem < 0) {
+            container.selecteditem = (container.wrap ? itemcontainer.children.length+item : 0)
+          }
+          if (container.selecteditem > (itemcontainer.children.length-1)) {
+            container.selecteditem = (container.wrap ? item-itemcontainer.children.length : (itemcontainer.children.length-1))
+          }
           if (container.carouselmoved != null) container.carouselmoved(item+1)
         }
 
