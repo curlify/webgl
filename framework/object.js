@@ -11,6 +11,17 @@
     var animator = curlify.getModule("animator")
     var sys = curlify.getModule("sys")
 
+    function array_move(array, old_index, new_index) {
+        if (new_index >= array.length) {
+            var k = new_index - array.length;
+            while ((k--) + 1) {
+                array.push(undefined);
+            }
+        }
+        array.splice(new_index, 0, array.splice(old_index, 1)[0]);
+        return array; // for testing purposes
+    };
+
     return {
       new : function(ident,width,height) {
 
@@ -405,6 +416,18 @@
                 console.log("removing: "+this.identifier+" from "+this.parent.identifier)
                 this.parent.children.splice(i,1)
                 break
+              }
+            }
+
+          },
+
+          bringToFront : function() {
+            if (this.parent == null) return
+
+            for (var i=0;i<this.parent.children.length;i++) {
+              if (this == this.parent.children[i]) {
+                array_move(this.parent.children,i,this.parent.children.length-1)
+                break;
               }
             }
 
