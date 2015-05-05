@@ -407,7 +407,9 @@
         reject(Error("cors request failed with 'Network Error'"));
       };  
 
-      if (params != null) xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      if (params != null && params instanceof FormData == false) {
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      }
       xhr.send(params)      
     })
   }
