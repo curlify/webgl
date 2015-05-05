@@ -150,9 +150,15 @@
         var instance = object.new("sprite loader")
         instance.sheet = sheet
 
+        instance.promise = new Promise(function(resolve, reject) {
+          instance.resolve = resolve
+          instance.reject = reject
+        })
+
         sheet.onload = function() {
           localNewFromSheet(sheet,loop,limitamount,limitoffsetstart,instance)
           if (instance.onload != null) instance.onload()
+          instance.resolve(instance)
         }
 
         return instance
