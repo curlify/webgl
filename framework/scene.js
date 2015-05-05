@@ -111,6 +111,25 @@
         if (showanim != null) sceneanim.animate( prevscene, showanim )
       },
 
+      replaceScene : function(scene,showanim,hideanim) {
+        var prevscene = scenestack[scenestack.length-1]
+        scenestack.push(scene)
+        if (showanim != null) {
+          var callback = showanim.onComplete
+          var completefunc = function() {
+            if (callback != null) callback()
+            scenestack.splice(scenestack.length-2,1)
+            console.log("remove scene from stack",prevscene.identifier,scenestack.length)
+          }
+          showanim.onComplete = completefunc
+          sceneanim.animate( scene, showanim )
+        } else {
+          scenestack.splice(scenestack.length-2,1)
+        }
+        if (prevscene == null) return
+        if (hideanim != null) sceneanim.animate( prevscene, hideanim )
+      },
+
       removeAllScenes : function() {
         scenestack = []
         fboUpdateList = []
