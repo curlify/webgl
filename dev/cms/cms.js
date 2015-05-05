@@ -5,6 +5,8 @@
 
       var instance = object.new()
 
+      instance.fontname = "Roboto"
+
       var loading = instance.add( rectangle.new(0,5,{red:1,green:1,blue:1}) )
       loading.total = 2
       loading.current = 0
@@ -35,7 +37,12 @@
         function(requires) {
 
           var accountmenu = requires[0]
+          accountmenu.defaultpos = 0
+
           var settingsmenu = requires[1]
+
+          instance.accountmenu = accountmenu
+          instance.settingsmenu = settingsmenu
 
           var main = instance.add( focusable.new("main") )
           main.alpha = 0
@@ -72,10 +79,23 @@
           instance.selectAd = function(ad) {
             console.log("selectAd",ad)
             instance.selectedAd = ad
-            require("http://api.curlify.com/units/ads/2207/assets/dev.zip").then(
+            //require("http://api.curlify.com/units/ads/2208/assets/dev.zip").then(
+            require("http://curlify.io/api/ads/"+ad.id+"/zip?postfix=.zip").then(
               function(script) {
+                console.log("RESOLVED!")
                 adarea.children = []
-                var ad = adarea.add( script.new() )
+                try {
+                  var ad = adarea.add( script.new() )
+                } catch(err) {
+                  console.log(Error(err))
+                }
+                zipfile = null
+                curlify.localVars.zipfile = null
+              },
+              function() {
+                console.log("REJECTED!")
+                zipfile = null
+                curlify.localVars.zipfile = null
               }
             )
             edit.active = true

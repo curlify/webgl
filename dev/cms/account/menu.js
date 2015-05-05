@@ -12,6 +12,10 @@
       accounts.alpha = 0
       //accounts.itemsize = viewWidth*0.5
 
+      accounts.carouselmoved = function(index) {
+        cms.accountmenu.defaultpos = index-1
+      }
+
       accounts.addLastCard = function() {
         var acc = accounts.add( rectangle.new(viewWidth*0.7,viewHeight*0.8,{red:1,green:1,blue:1}) )
         acc.layoutChanged = function() {
@@ -40,6 +44,8 @@
             var params = "accounts_type_id=1&name="+name.value
             createCORSRequest('POST', 'http://curlify.io/api/accounts', params).then( function(response){
               console.log(response)
+
+              scene.replaceScene( cms.accountmenu.new(cms) )
             }, function(error){
               console.log("error",error)
             })
@@ -50,6 +56,7 @@
           }
         }
         accounts.anim.animate( accounts, {alpha:1,time:500,ease:animator.inOutQuad})
+        accounts.moveto(cms.accountmenu.defaultpos,true)
       }
 
       createCORSRequest('GET', 'http://curlify.io/api/accounts').then( function(response){
