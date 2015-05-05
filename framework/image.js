@@ -2,7 +2,7 @@
 (function() {
 
   var curlify = document.currentScript.curlify
-
+  
   var image = (function() {
 
     console.log("initialize image module")
@@ -23,7 +23,7 @@
         image = new Image() //curlify.addImageElement()
         if (zipfile != null) {
           var zipEntry = zipfile.file(source)
-          console.log("image.source zip",zipEntry,source,zipfile)
+          //console.log("image.source zip",zipEntry,source,zipfile)
           image.src = 'data:image/jpg;base64,' + JSZip.base64.encode(zipEntry.asBinary())
         } else {
           //console.log("image source file")
@@ -38,6 +38,11 @@
         var gl = curlify.localVars.gl
 
         var instance = (geometry ? geometry : quad.new("image : "+source))
+
+        instance.promise = new Promise(function(resolve, reject) {
+          instance.resolve = resolve
+          instance.reject = reject
+        })
 
         instance.size.width = null
         instance.size.height = null
@@ -63,6 +68,7 @@
           
           instance.loaded = true
           if (instance.onload != null) instance.onload()
+          instance.resolve(instance)
 
         } else if ( source instanceof Object ) {
 
@@ -78,10 +84,12 @@
 
             instance.loaded = true
             if (instance.onload != null) instance.onload()
+            instance.resolve(instance)
 
           } else {
 
             console.log("ERROR: image.new from unknown Object",source)
+            instance.reject(Error("image.new from unknown Object "+source))
 
           }
 
@@ -93,8 +101,12 @@
           instance.image.onload = function() {
             if (image == null) {
               console.log("image == null!")
+              instance.reject(Error("image == null!"))
               return
             }
+
+            //instance.texture = createTextureFromImage(instance.image)
+            
             instance.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, instance.texture);
 
@@ -105,6 +117,7 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, instance.image);
+            
 
             if (instance.size.width == null) instance.size.width = instance.image.width
             if (instance.size.height == null) instance.size.height = instance.image.height
@@ -113,14 +126,17 @@
 
             instance.loaded = true
             if (instance.onload != null) instance.onload()
+            instance.resolve(instance)
           }
           instance.image.onerror = function() {
             console.log("texture load failed",source)
+            instance.reject(Error("image.onerror "+source))
           }
 
         } else {
 
           console.log("ERROR: image.new from unknown object",source)
+          instance.reject(Error("image.new from unknown object "+source))
 
         }
 
