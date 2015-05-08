@@ -1,0 +1,43 @@
+bug
+---
+
+
+v1
+--
+inputcanvas
+elementtien koon globaali säätö?
+ison ruudun käyttö
+user management
+login
+
+v2
+--
+... nappi vain pääruudussa jota painamalla tipahtaa 
+näkymien päivitys lennossa - socket auki serverille?
+järjestelynapit näkymiin
+... nappi jossa submenu
+listanäkymässä swipe-to-delete
+hiiren rulla mukaan scrollailuun
+
+rdy
+---
+pakettien zippailu
+assetit yhteen
+pinterest -tyyliset listat - alla metadata
+vain valkosia nappeja
+ulkonäön säätö
+
+
+
+
+
+ideas
+-----
+
+logo
+user
+account
+- settings
+ad
+- preview
+- files
