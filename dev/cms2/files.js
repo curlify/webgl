@@ -76,15 +76,20 @@
           itemimage.onload = function() {
             var scale = (menuscroll.itemwidth-cms.itembackgroundpad) / this.width()
 
+            var targetheight = this.size.height * scale
             this.scale.x = scale
-            this.scale.y = scale
+            this.scale.y = 0//scale
+            this.anim.animate( this.scale, {y:scale,time:500,ease:animator.outQuad})
 
-            container.size.height = this.height() + cms.metadataheight + cms.itembackgroundpad/2
-            bg.size.height = container.height()
+            container.size.height = targetheight/*this.height()*/ + cms.metadataheight + cms.itembackgroundpad/2
+            //bg.size.height = container.height()
+            bg.anim.animate( bg.size, {height:container.height(),time:500,ease:animator.outQuad})
 
-            this.position.y = -container.height()/2+this.height()/2+cms.itembackgroundpad/2
+            //this.position.y = -container.height()/2+this.height()/2+cms.itembackgroundpad/2
+            this.anim.animate( this.position, {y:-container.height()/2+targetheight/2+cms.itembackgroundpad/2,time:500,ease:animator.outQuad})
 
-            metadata.position.y = container.height()/2-cms.metadataheight/2
+            //metadata.position.y = container.height()/2-cms.metadataheight/2
+            metadata.anim.animate( metadata.position, {y:container.height()/2-cms.metadataheight/2,time:500,ease:animator.outQuad})
 
             this.alpha = 0
             this.anim.animate( this, {alpha:1,time:2500,ease:animator.inOutQuad})
