@@ -227,12 +227,23 @@
 
           }
 
-          var logo = menuscroll.add( image.new("curlify_logo.png") )
+          var logo = menuscroll.add( object.new("logo") )
           logo.id = 0
-          logo.onload = function() {
-            var sc = menuscroll.itemwidth / logo.width()
-            logo.scale.x = sc
-            logo.scale.y = sc
+          var bg = logo.add( rectangle.new(0,0,{red:1,green:1,blue:1}) )
+          //bg.alpha = 0.0//25
+          bg.visible = false
+          var img = logo.add( image.new("curlify_logo.png") )
+          img.onload = function() {
+            var sc = menuscroll.itemwidth / img.width()
+            this.scale.x = sc
+            this.scale.y = sc
+
+            logo.size.width = img.width()
+            logo.size.height = img.height()
+
+            bg.size.width = logo.width()
+            bg.size.height = logo.height()
+
             instance.layoutChangedTree()
           }
           //menuscroll.user = menuscroll.addItem( "USER", "VESA", "user.js" )
