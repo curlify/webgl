@@ -8,10 +8,16 @@
       instance.itemwidth = 200
       instance.itempad = 20
 
-      instance.swipespeed = viewHeight
-      instance.swipefunc = animator.linear
+      //instance.swipespeed = viewHeight
+      //instance.swipefunc = animator.linear
 
       instance.sort = "id"
+
+      instance.relativeDrag = function(x,y) {
+        if (this.focused != true) return false
+        if (this.focusdrag != null) this.focusdrag(x,y)
+        return true
+      }
 
       instance.layoutFunction = function(item,x,y,index) {
         if (item.targetposition == null) {
