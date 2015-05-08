@@ -98,6 +98,7 @@
         acc.id = 9999999999
 
         var bg = acc.add( rectangle.new(acc.width(),acc.height(),{red:1,green:1,blue:1}) )
+        bg.drawbackside = true
         bg.alpha = 0.25
 
         acc.focus = function() {
@@ -109,11 +110,95 @@
           acc.anim.animate( acc.scale, {x:1,y:1,time:250,ease:animator.inOutQuad})
         }
 
-        var newaccount = acc.add( button.new( cms.buttons2.children[2] ) )
+        var newaccount = acc.add( image.new( cms.buttons2.children[2] ) )
         newaccount.scale.x = cms.buttonscale
         newaccount.scale.y = cms.buttonscale
-        newaccount.click = function() {
 
+        var inputside = acc.add( object.new() )
+        inputside.rotate.y = Math.PI
+        inputside.active = false
+
+        var close = inputside.add( button.new( cms.buttons2.children[3] ))
+        close.scale.x = 0.3
+        close.scale.y = 0.3
+        close.position.x = acc.width()/2-close.width()/2
+        close.position.y = -acc.height()/2+close.height()/2
+        close.click = function() {
+          inputside.active = false
+          acc.anim.animate( acc.rotate, {y:0,time:500,ease:animator.inOutQuad,onComplete:
+            function() {
+              newaccount.input.destroy()
+              newaccount.input = null
+              newaccount.inputcanvas = null
+              newaccount.inputtexture.removeSelf()
+              newaccount.inputtexture = null
+            }
+          })
+        }
+
+        var gogo = inputside.add( image.new( cms.buttons2.children[1] ) )
+        gogo.scale.x = 0.3
+        gogo.scale.y = 0.3
+        gogo.position.y = 50
+
+        acc.click = function() {
+
+          if (close.focused) return
+
+          if (newaccount.input == null) {
+
+            inputside.active = true
+            acc.anim.animate( acc.rotate, {y:Math.PI,time:500,ease:animator.inOutQuad})
+
+            var inputcanvas = document.createElement("canvas");
+            inputcanvas.width = 150//acc.width()
+            inputcanvas.height = 28//acc.height()
+
+            newaccount.inputcanvas = inputcanvas
+
+            var input = new CanvasInput({
+              canvas: inputcanvas,
+              placeHolder: 'account name',
+              onsubmit: function(){
+                acc.click()
+              },
+            });
+            input.focus()
+
+            newaccount.input = input
+
+            var inputtexture = inputside.add( image.new(inputcanvas) )
+            inputtexture.step = function() {
+              gl.bindTexture(gl.TEXTURE_2D, this.texture);
+              gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputcanvas);
+            }
+
+            newaccount.inputtexture = inputtexture
+          } else {
+
+            acc.anim.animate( acc.rotate, {y:0,time:500,ease:animator.inOutQuad,onComplete:
+              function() {
+
+                var params = "accounts_type_id=1&name="+newaccount.input.value()
+                createCORSRequest('POST', 'http://curlify.io/api/accounts', params).then( function(response){
+                  console.log(response)
+
+                  cms.content.change( cms.accountview.new(cms) )
+                }, function(error){
+                  console.log("error",error)
+                })
+
+                newaccount.input.destroy()
+                newaccount.input = null
+                newaccount.inputcanvas = null
+                newaccount.inputtexture.removeSelf()
+                newaccount.inputtexture = null
+                
+              }
+            })
+
+          }
+          /*
           if (menuscroll.div == null) {
             var div = document.createElement('div');
             div.innerHTML = "<center>Account name <br><input type='text' id='accountName'>";
@@ -153,6 +238,7 @@
             menuscroll.div = null
 
           }
+          */
         }
 
         return acc
