@@ -134,11 +134,11 @@
           //acc.anim.animate( acc.scale, {x:1,y:1,time:250,ease:animator.inOutQuad})
         }
 
-        var newaccount = acc.add( button.new( cms.buttons2.children[2] ) )
+        var newaccount = acc.add( image.new( cms.buttons2.children[2] ) )
         newaccount.scale.x = cms.buttonscale
         newaccount.scale.y = cms.buttonscale
         
-        newaccount.click = function() {
+        acc.click = function() {
 
           var div = document.createElement('div');
           div.innerHTML = "<input type='file' id='file-select' multiple/>";
@@ -180,7 +180,7 @@
         var index = 0
         var nextItem = function() {
 
-          if (index >= cmsJson.length) {
+          if (cmsJson.error != null || index >= cmsJson.length) {
             var f = menuscroll.addLastCard()
             f.alpha = 0
             f.anim.animate( f, {alpha:1,time:250,ease:animator.inQuad})
