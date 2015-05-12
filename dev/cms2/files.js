@@ -13,6 +13,7 @@
       }
 
       var menuscroll = instance.add( cms.sorted_scrollable.new(cms,"main menu",viewWidth,viewHeight) )
+      /*
 
       menuscroll.addItem = function(json) {
 
@@ -81,7 +82,7 @@
             this.scale.y = 0//scale
             this.anim.animate( this.scale, {y:scale,time:500,ease:animator.outQuad})
 
-            container.size.height = targetheight/*this.height()*/ + cms.metadataheight + cms.itembackgroundpad/2
+            container.size.height = targetheight + cms.metadataheight + cms.itembackgroundpad/2
             //bg.size.height = container.height()
             bg.anim.animate( bg.size, {height:container.height(),time:500,ease:animator.outQuad})
 
@@ -172,23 +173,139 @@
         
         return acc
       }
+      */
+      var addNewCard = function() {
+        var f = menuscroll.addItem( {
+          sortid: 9999999,
+          image: cms.buttons2.children[2],
+          imageloaded: function(image) {
+            image.scale.x = 3
+            image.scale.y = 3
+          },
+          clickfunction: function() {
+            var div = document.createElement('div');
+            div.innerHTML = "<input type='file' id='file-select' multiple/>";
+            document.body.appendChild(div);
 
-      createCORSRequest('GET', 'http://curlify.io/api/assets/ad_id/'+cms.ad.id).then( function(response){
-        console.log(response)
+            var fileselect = document.getElementById('file-select');
+            fileselect.click()
+
+            fileselect.onchange = function() {
+              var files = fileselect.files;
+              var formdata = new FormData()
+              console.log(files)
+
+              for (var i=0;i<files.length;i++) {
+                console.log("append",files[i].name)
+                formdata.append("userfile[]",files[i],files[i].name)
+              }
+
+              cms.restRequest({
+                method: 'POST',
+                url: 'http://curlify.io/api/multi.php?adid='+cms.ad.id,
+                postdata: formdata,
+              }).then( function(response){
+                console.log(response)
+                cms.content.change( cms.filesview.new(cms) )
+              }, function(error){
+                console.log("error",error)
+              })
+
+              document.body.removeChild(div)
+            }
+          },
+        })
+        return f
+      }
+
+      var addFileCard = function(json) {
+
+        var isimage = json.mimetype == "image/jpg" || json.mimetype == "image/jpeg" || json.mimetype == "image/png"
+        var cardimage = (isimage ? "http://curlify.io/api/assets/"+json.id+"/content" : null)
+
+        var iscode = json.filename.slice(-3) == ".js"
+        cardimage = iscode ? cms.buttons3.children[22] : cardimage
+        
+        var f = menuscroll.addItem( {
+          metadata: json.filename,
+          sortid: json.id,
+          image: cardimage,
+          imageloaded: function(image) {
+            if (iscode) {
+              image.scale.x = 3
+              image.scale.y = 3
+            }
+          },
+          imagealign: "center",
+          clickfunction: function() {
+            if (isimage) {
+              window.open( "http://curlify.io/api/assets/"+json.id+"/content" )
+            } else {
+              window.open( "http://curlify.io/dev/cms2/edit.php?id="+json.id)
+            }
+          },
+          inputparameters: {
+            value: json.filename,
+          },
+          inputfunction: function(value) {
+            cms.restRequest({
+              method:'PUT',
+              url: 'http://curlify.io/api/assets/'+json.id,
+              postdata: "filename="+value,
+            }).then( function(response){
+              console.log(response)
+              cms.content.change( cms.filesview.new(cms) )
+            }, function(error){
+              console.log("error",error)
+            })
+          },
+          contextitems: [
+            { title : "Duplicate",
+              action : function() {
+                console.log("FOO")
+              }
+            },
+            { title : "Rename",
+              action : function() {
+                console.log("FOO",this)
+                this.menuitem.showinput()
+              }
+            },
+            { title : "Delete",
+              action : function() {
+                createCORSRequest('DELETE', 'http://curlify.io/api/assets/'+json.id).then( function(response){
+                  cms.content.change( cms.filesview.new(cms) )
+                  console.log(response)
+                }, function(error){
+                  console.log("error",error)
+                })
+              }
+            },
+          ],
+        })
+        return f
+      }
+
+
+      cms.restRequest({
+        method: 'GET',
+        url: 'http://curlify.io/api/assets/ad_id/'+cms.ad.id,
+      }).then( function(response){
+        //console.log(response)
         var cmsJson = JSON.parse(response);
 
         var index = 0
         var nextItem = function() {
 
           if (cmsJson.error != null || index >= cmsJson.length) {
-            var f = menuscroll.addLastCard()
+            var f = addNewCard()
             f.alpha = 0
             f.anim.animate( f, {alpha:1,time:250,ease:animator.inQuad})
             menuscroll.layoutChangedTree()
             return
           }
 
-          var f = menuscroll.addItem( cmsJson[index] )
+          var f = addFileCard( cmsJson[index] )
           f.alpha = 0
           f.anim.animate( f, {alpha:1,time:250,ease:animator.inQuad})
           menuscroll.layoutChangedTree()
@@ -199,16 +316,9 @@
         }
 
         nextItem()
-        /*
-        for (var i=0;i<cmsJson.length;i++) {
-          menuscroll.addItem( cmsJson[i] )
-        }
-
-        menuscroll.addLastCard()
-        */
 
       }, function(error){
-        menuscroll.addLastCard()
+        addNewCard()
       })
 
       instance.layoutChanged = function() {

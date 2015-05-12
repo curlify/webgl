@@ -32,9 +32,12 @@
         instance.size.width = instance.parent.width()
         instance.size.height = instance.parent.height()
 
-        var sc = instance.height()/adcontainer.size.height
-        adcontainer.scale.x = sc
-        adcontainer.scale.y = sc
+        var sc = (instance.height()-50)/adcontainer.size.height
+        //adcontainer.scale.x = sc
+        //adcontainer.scale.y = sc
+
+        adcontainer.anim.animate( adcontainer.scale, {x:sc,y:sc,time:500,ease:animator.inOutQuad})
+        adcontainer.anim.animate( adcontainer.position, {y:-instance.height()/2 + (adcontainer.size.height*sc)/2,time:500,ease:animator.inOutQuad})
       }
 
       return instance
