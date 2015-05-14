@@ -5,8 +5,10 @@
 
   console.log("initialize main",revision)
 
-  var currentScript = document.currentScript
-  var curlify = document.currentScript.curlify
+  var scaleMulti = 1
+  var curScript = document.currentScript || document._currentScript;
+  var currentScript = curScript
+  var curlify = curScript.curlify
 
   // evil extraction of all modules to local variables so that scripts have 'object' etc. defined already
   eval(curlify.extract(curlify.modules,"curlify.modules"))
@@ -66,13 +68,13 @@
       // {premultipliedAlpha: false}
       gl = canvas.getContext("webgl", parameters) || canvas.getContext("experimental-webgl");
     }
-    catch(e) {}
+    catch(e) {console.log(e);}
     
     //var sharedResourcesExtension = gl.getExtension("WEBGL_shared_resources");
     //console.log("shared",sharedResourcesExtension)
 
     // If we don't have a GL context, give up now
-    if (!gl) {
+    if (gl === undefined) {
       console.log("ERROR: Unable to initialize WebGL in target node");
       gl = null;
     }
@@ -142,7 +144,7 @@
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    var rel = {x: (e.clientX-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY-tgt.top-layoutOffset.y)*layoutScale.y}
+    var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
     swipestart(rel)
     target.press(rel.x,rel.y)
     target.drag(rel.x,rel.y)
@@ -158,7 +160,7 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    var rel = {x: (e.clientX-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY-tgt.top-layoutOffset.y)*layoutScale.y}
+    var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
     var swipedir = swipeend(rel)
     if (target.swipe(swipedir)) {
       target:resetpress()
@@ -180,7 +182,7 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      var rel = {x: (e.clientX-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY-tgt.top-layoutOffset.y)*layoutScale.y}
+      var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
       swipedrag(rel)
       target.drag(rel.x,rel.y)
     }
@@ -195,8 +197,8 @@
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
-    var rel = {x: (e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
-    //console.log("rel: "+rel.x,rel.y)
+    var rel = {x: (e.touches[0].pageX*scaleMulti-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY*scaleMulti-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+    console.log("rel: "+rel.x,rel.y)
     swipestart(rel)
     target.press(rel.x,rel.y)
     target.drag(rel.x,rel.y)
@@ -215,7 +217,7 @@
     touch = false
     var target = scene.getPointerUser()
     if (target == null) return
-    var rel = {x: (lasttouch.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (lasttouch.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+    var rel = {x: (lasttouch.touches[0].pageX*scaleMulti-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (lasttouch.touches[0].pageY*scaleMulti-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
     var swipedir = swipeend(rel)
     if (target.swipe(swipedir)) {
       target:resetpress()
@@ -232,29 +234,49 @@
     var target = scene.getPointerUser()
     if (target == null) return
     if (touch) {
-      var rel = {x: (e.touches[0].pageX-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+      var rel = {x: (e.touches[0].pageX*scaleMulti-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY*scaleMulti-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
       swipedrag(rel)
       target.drag(rel.x,rel.y)
     }
     lasttouch = e
     if (allowDefaultPointerEvent == false) e.preventDefault()
   }
-
+  var hasRotation = true;
+  var isany_mobile = sys.ismobile.any();
+  if(sys.ismobile.FireFox())
+  {
+    hasRotation = false;
+  }
   function deviceMotionHandler(e) {
     // Grab the acceleration from the results
     sensors.acceleration = e.acceleration;
+    if(isany_mobile && (sensors.acceleration === null || sensors.acceleration.x === null)) // Compatibility with some browsers
+    {
+      sensors.acceleration = e.accelerationIncludingGravity;
+    } 
 
     // Grab the rotation rate from the results
-    sensors.rotationRate = e.rotationRate;
+    
+    if(hasRotation && (e.rotationRate === null || e.rotationRate.alpha === null)) // Some Android browsers don't know how to handle rotationRate, orientation hack does it nicely
+    {
+      hasRotation = false;
+    }
+    else if(hasRotation) {
+      sensors.rotationRate = e.rotationRate;
+    }
 
     //console.log("alpha: "+e.rotation.alpha)
   }
 
-  var orientation_hack = (sys.ismobile.any() ? -180 : 0)
+  var orientation_hack = (isany_mobile ? -180 : 0)
   function deviceOrientationHandler(e) {
     // make orientation -180 -> 180 on all devices
     if (e==null) return
     //console.log("alpha: "+e.alpha+","+(e.alpha+orientation_hack)+","+orientation_hack)
+    if(isany_mobile && !hasRotation && sensors.orientation !== null && sensors.orientation.alpha !== null) // Orientation hack for rotation
+    {
+      sensors.rotationRate = {beta:sensors.orientation.alpha-(e.alpha+orientation_hack),alpha:sensors.orientation.beta-e.beta,gamma:sensors.orientation.gamma-e.gamma};
+    }
     sensors.orientation = {alpha:e.alpha+orientation_hack,beta:e.beta,gamma:e.gamma};
   }
 
@@ -266,11 +288,12 @@
   function resizeCanvas() {
     //console.log("resizeCanvas",glcanvas)
     var realToCSSPixels = window.devicePixelRatio || 1;
-    realToCSSPixels = 1
+    //realToCSSPixels = 1
     // TODO: fix pointers / fbos - layout is wrong in other words
+    scaleMulti = realToCSSPixels
 
-    var width = Math.floor(glcanvas.clientWidth * realToCSSPixels);
-    var height = Math.floor(glcanvas.clientHeight * realToCSSPixels);
+    var width = Math.floor(glcanvas.clientWidth);
+    var height = Math.floor(glcanvas.clientHeight);
 
     //console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" * "+realToCSSPixels+" "+width+"x"+height+" "+glcanvas.width+"x"+glcanvas.height)
 
@@ -646,8 +669,24 @@
 
     glcanvas = parameters.canvas ? document.getElementById(parameters.canvas) : currentScript.parentNode
     curlify.localVars.glcanvas = glcanvas
+    if(parameters.autosize === true)
+    {
+      var scale=1/window.devicePixelRatio;
+      if(sys.ismobile.Android() && ! sys.ismobile.FireFox() || sys.ismobile.iOS()) // All webkit browsers handle zoom very nicely
+      {
+          glcanvas.parentNode.style.zoom = scale;
+      }
+      else // Rest are rubbish.
+      {
+          glcanvas.style.width = window.devicePixelRatio+"00%"; // We can add that it takes previous value and multiplies it, but right now I assume, it's a fullscreen ad
+          glcanvas.style.height = window.devicePixelRatio+"00%";
+          var parStyle = glcanvas.parentNode.getAttribute("style");
+          glcanvas.parentNode.setAttribute("style",parStyle+"-moz-transform: scale("+scale+");-moz-transform-origin: 0 0;-o-transform: scale("+scale+");-o-transform-origin: 0 0;zoom:"+scale+";transform: scale("+scale+");transform-origin: 0 0;");
+      }
+    }
+    
 
-    if (glcanvas == null) {
+    if (glcanvas === null) {
       parameters.canvas ? console.log("ERROR: cannot find canvas to draw on:",parameters.canvas) : console.log("ERROR: no canvas to draw to as parentNode:",glcanvas)
       return
     }
@@ -658,7 +697,7 @@
 
     curlify.localVars.gl = gl
     // Only continue if WebGL is available and working  
-    if (gl == null) {
+    if (gl === undefined) {
       console.log("ERROR: could not initialize webgl")
       return
     }

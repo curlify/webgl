@@ -1,6 +1,8 @@
 
 (function() {
-  var curlify = document.currentScript.curlify
+  var curScript = document.currentScript || document._currentScript;
+
+  var curlify = curScript.curlify
   
   var sys = (function(){
 
@@ -21,6 +23,9 @@
         iOS: function() {
           return navigator.userAgent.match(/iPhone|iPad|iPod/i);
         },
+        FireFox: function() {
+          return navigator.userAgent.match(/Firefox/i)
+        }, 
         Opera: function() {
           return navigator.userAgent.match(/Opera Mini/i);
         },
