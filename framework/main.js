@@ -287,10 +287,6 @@
 
   function resizeCanvas() {
     //console.log("resizeCanvas",glcanvas)
-    var realToCSSPixels = window.devicePixelRatio || 1;
-    //realToCSSPixels = 1
-    // TODO: fix pointers / fbos - layout is wrong in other words
-    scaleMulti = realToCSSPixels
 
     var width = Math.floor(glcanvas.clientWidth);
     var height = Math.floor(glcanvas.clientHeight);
@@ -669,8 +665,13 @@
 
     glcanvas = parameters.canvas ? document.getElementById(parameters.canvas) : currentScript.parentNode
     curlify.localVars.glcanvas = glcanvas
+    curlify.localVars.autosize = parameters.autosize
     if(parameters.autosize === true)
     {
+      var realToCSSPixels = window.devicePixelRatio || 1;
+      //realToCSSPixels = 1
+      // TODO: fix pointers / fbos - layout is wrong in other words
+      scaleMulti = realToCSSPixels
       var scale=1/window.devicePixelRatio;
       if(sys.ismobile.Android() && ! sys.ismobile.FireFox() || sys.ismobile.iOS()) // All webkit browsers handle zoom very nicely
       {
