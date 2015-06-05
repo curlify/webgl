@@ -1,7 +1,7 @@
 uglifyjs \
-jszip.min.js \
-jszip-utils.min.js \
-gl-matrix-min.js \
+jszip.framework.js \
+jszip-utils.framework.js \
+gl-matrix.framework.js \
 webgl-obj-loader.js \
 framework/curlify.js \
 framework/glutils.js \
