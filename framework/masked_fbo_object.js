@@ -56,7 +56,7 @@
               vec4 color = texture2D(u_texture, v_tex_coord); \
               vec4 mask_color = texture2D(u_mask_texture, v_tex_coord); \
               \
-              gl_FragColor = color * mask_color.a * u_alpha; \
+              gl_FragColor = vec4(color.rgb, color.a * mask_color.a * u_alpha); \
             } \
             ',
             type: "x-shader/x-fragment"
