@@ -904,8 +904,8 @@
 
         if (parameters.onload != null) parameters.onload()
 
-        zipfile = null
-        curlify.localVars.zipfile = null
+        //zipfile = null
+        //curlify.localVars.zipfile = null
 
         if (parameters.framerate == 0) return
 
