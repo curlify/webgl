@@ -11,6 +11,8 @@
 
     var glutils = curlify.getModule("glutils")
     var object = curlify.getModule("object")
+    var mat4 = curlify.getModule("mat4")
+    var vec3 = curlify.getModule("vec3")
 
     return {
 

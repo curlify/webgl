@@ -1,18 +1,20 @@
 
 (function() {
 
-  var revision = "7.1"
-
-  console.log("initialize main",revision)
+  var revision = "10"
+  console.log("initialize main",revision,document.currentScript)
 
   var scaleMulti = 1
-  var curScript = document.currentScript || document._currentScript;
-  var currentScript = curScript
-  var curlify = curScript.curlify
+
+  var currentScript = document.currentScript // need local reference so curlify.start gets correct element
+  var curlify = currentScript.curlify
 
   // evil extraction of all modules to local variables so that scripts have 'object' etc. defined already
   eval(curlify.extract(curlify.modules,"curlify.modules"))
   eval(curlify.extract(curlify.localVars,"curlify.localVars"))
+
+  curlify.scene = scene
+  curlify.renderRequired = false
 
   var glcanvas
   var glclearcolor = 0.0
@@ -21,18 +23,20 @@
   var touch = false
   var lasttouch = null
 
+  var hoverlist = []
+  var hoverfocus = null
+
   var lastPointerPosition = {x:0,y:0}
   var pointerTargetDirection = {x:0,y:0}
   var pointerDirection = {x:0,y:0}
   var pointerTimestamp = 0
 
-  var renderRequested = true
+  //var renderRequested = true
   var imageid = 0
   var running = false
   var appendedElements = []
 
   var allowDefaultPointerEvent = false
-
 
   // PRIVATE FUNCTIONS
   function createProjection(right, top, near, far) {
@@ -139,15 +143,35 @@
 
   function mousedown(e) {
     if (scene.isAnimating() || touch == true) return
+
     var tgt = e.currentTarget.getBoundingClientRect()
-    //console.log("mousedown : "+e.clientX+","+e.clientY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top)
+    //console.log("mousedown : "+e.clientX+","+e.clientY+" | "+window.pageXOffset+","+window.pageYOffset+" | "+tgt.left+","+tgt.top,scene.getPointerUser())
     touch = true
     var target = scene.getPointerUser()
     if (target == null) return
     var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
+
+    //console.log("mousedown",rel.x,rel.y)
+    // find out which objects are hit
+    var list = target.hoverTree(rel.x,rel.y)
+    hoverlist = list
+    if (list.length > 0) {
+      hoverfocus = list[0]
+
+      // send press/drag events to hit object
+      hoverfocus.press(rel.x,rel.y)
+      hoverfocus.drag(rel.x,rel.y)
+
+      //console.log("hoverfocus:",hoverfocus)
+    } else {
+      hoverfocus = null
+    }
+
     swipestart(rel)
-    target.press(rel.x,rel.y)
-    target.drag(rel.x,rel.y)
+
+    // original target gets unfocused events
+    target.unfocused_press(rel.x,rel.y)
+    target.unfocused_drag(rel.x,rel.y)
   }
 
   function mouseup(e) {
@@ -155,7 +179,7 @@
       scene.resetPointerStealer()
       return
     }
-    console.log("mouseup : "+e.clientX+","+e.clientY)
+    //console.log("mouseup : "+e.clientX+","+e.clientY)
     var tgt = e.currentTarget.getBoundingClientRect()
     touch = false
     var target = scene.getPointerUser()
@@ -163,9 +187,11 @@
     var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
     var swipedir = swipeend(rel)
     if (target.swipe(swipedir)) {
-      target:resetpress()
+      //console.log("yes, swipe in fact")
+      target.resetpress()
     } else {
-      target.release(rel.x,rel.y)
+      if (hoverfocus != null) hoverfocus.release(rel.x,rel.y)
+      target.unfocused_release(rel.x,rel.y)
     }
     scene.resetPointerStealer()
   }
@@ -173,18 +199,53 @@
   function mouseout(e) {
     //console.log("mouseout : "+e.clientX+","+e.clientY)
     if (touch) mouseup(e)
+    if (hoverfocus != null) {
+      hoverfocus.hover(-999999,-999999)
+      return
+    }
   }
 
   function mousemove(e) {
-    if (scene.isAnimating() || touch == false) return
+    if (scene.isAnimating()) return
     //console.log("mousemove : "+e.clientX+","+e.clientY)
     var tgt = e.currentTarget.getBoundingClientRect()
     var target = scene.getPointerUser()
     if (target == null) return
+    var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
+
+    // find out which objects are hit
+    var list = target.hoverTree(rel.x,rel.y)
+    hoverlist = list
     if (touch) {
-      var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
+
+      if (list.length > 0) {
+        if (hoverfocus != list[0] && hoverfocus != null) hoverfocus.resetpress()
+        hoverfocus = list[0]
+        // send drag events to hit object
+        hoverfocus.drag(rel.x,rel.y)
+      } else {
+        if (hoverfocus != null) hoverfocus.resetpress()
+        hoverfocus = null
+      }
+
       swipedrag(rel)
-      target.drag(rel.x,rel.y)
+      target.unfocused_drag(rel.x,rel.y)
+    } else {
+      var list = target.hoverTree(rel.x,rel.y)
+
+      if (hoverfocus != null && list.length == 0) {
+        hoverfocus.hover(-999999,-999999)
+        hoverfocus = null
+        return
+      }
+      if (list.length == 0) return
+      if (hoverfocus != null && hoverfocus != list[0]) hoverfocus.hover(-99999,-999999)
+
+      hoverfocus = list[0]
+      var relx = (rel.x-screenWidth/2)-hoverfocus.absolutex()
+      var rely = (rel.y-screenHeight/2)-hoverfocus.absolutey()
+      hoverfocus.hover(relx,rely)
+      //console.log("hover",hoverfocus.identifier)
     }
   }
 
@@ -198,7 +259,7 @@
     var target = scene.getPointerUser()
     if (target == null) return
     var rel = {x: (e.touches[0].pageX*scaleMulti-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY*scaleMulti-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
-    console.log("rel: "+rel.x,rel.y)
+    //console.log("rel: "+rel.x,rel.y)
     swipestart(rel)
     target.press(rel.x,rel.y)
     target.drag(rel.x,rel.y)
@@ -281,18 +342,47 @@
   }
 
   function orientationChanged() {
-    //console.log("orientationChanged() "+","+screen.orientation+","+screen.width+","+screen.height+" : "+glcanvas.clientWidth+","+glcanvas.clientHeight)
+    /*
+    console.log("orientationChanged() "+","+screen.orientation+","+screen.width+","+screen.height+" : "+glcanvas.clientWidth+","+glcanvas.clientHeight)
+    window.clearTimeout( curlify.orientationInterval )
+    curlify.orientationInterval = window.setInterval(
+      function() {
+        curlify.resizeCanvas()
+        window.clearTimeout( curlify.orientationInterval )
+      },
+      250
+    )*/
+
     window.requestAnimationFrame( curlify.resizeCanvas )
+  }
+
+  function wheelHandler(e) {
+    //console.log(e)
+    e.preventDefault()
+    
+    if (scene.isAnimating() || hoverlist.length == 0) return
+
+    for (var i=0;i<hoverlist.length;i++) {
+      var target = hoverlist[i]
+      if (target.wheel != null) {
+        target.wheel( e.wheelDeltaX, e.wheelDeltaY )
+        break
+      }
+    }
+
   }
 
   function resizeCanvas() {
     //console.log("resizeCanvas",glcanvas)
 
-    var width = Math.floor(glcanvas.clientWidth);
-    var height = Math.floor(glcanvas.clientHeight);
+    //var realToCSSPixels = window.devicePixelRatio || 1;
 
-    //console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" * "+realToCSSPixels+" "+width+"x"+height+" "+glcanvas.width+"x"+glcanvas.height)
+    var width = Math.floor(glcanvas.clientWidth*scaleMulti);
+    var height = Math.floor(glcanvas.clientHeight*scaleMulti);
 
+    //console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" * "+window.devicePixelRatio+" "+width+"x"+height+" "+glcanvas.width+"x"+glcanvas.height)
+
+    
     layoutWidth = width
     layoutHeight = height
     layoutScale = {x: screenWidth/layoutWidth, y:screenHeight/layoutHeight}
@@ -318,8 +408,8 @@
     layoutOffset.x = (width-layoutWidth)/2,
     layoutOffset.y = (height-layoutHeight)/2
 
-    glcanvas.width = glcanvas.clientWidth//width
-    glcanvas.height = glcanvas.clientHeight//height
+    glcanvas.width = width
+    glcanvas.height = height
 
     //console.log("resized",glcanvas.width,glcanvas.height,viewWidth,viewHeight)
     curlify.localVars.layoutWidth = layoutWidth
@@ -333,7 +423,7 @@
     curlify.localVars.screenWidth = screenWidth
     curlify.localVars.screenHeight = screenHeight
 
-    console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" "+screenWidth+"x"+screenHeight+" "+layoutWidth+"x"+layoutHeight+" "+glcanvas.width+","+glcanvas.height)
+    console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" "+screenWidth+"x"+screenHeight+" "+layoutWidth+"x"+layoutHeight+" "+glcanvas.width+","+glcanvas.height+" "+viewWidth+"x"+viewHeight)
 
     scene.layoutChanged()
   }
@@ -441,7 +531,9 @@
     var module = curlify.getModule(script)
     if (module != null) {
       console.log("return module '"+script+"'",module)
-      return module
+      return new Promise(function(resolve,reject) {
+        resolve(module)
+      })
     }
 
     // all other modules are returned as promises
@@ -466,62 +558,121 @@
             zipfile = new JSZip(data);
             curlify.localVars.zipfile = zipfile
             //console.log("require zip file",zipfile)
-            var adscriptfile = zipfile.file("main.js")
-            if (adscriptfile == null) {
+
+            var jsfiles = zipfile.filter(function (relativePath, file){
+              if (relativePath.slice(-3) == ".js") return true
+              return false
+            })
+
+            //console.log("files matching .js",jsfiles)
+
+            var mainscriptfile = null
+            var mainscriptobject = null
+
+            for (var i=0;i<jsfiles.length;i++) {
+              new function() {
+              var file = jsfiles[i]
+              var scripto = null
+              var e = null
+              try {
+                scripto = eval(file.asText())
+              } catch (e) {
+                console.log("error evaluating file "+file.name+" with '"+e+"'")
+              }
+              if (file.name == "main.js") {
+                mainscriptfile = file
+                mainscriptobject = scripto
+                if (e) {
+                  zipfile = null
+                  curlify.localVars.zipfile = null
+                  reject(Error("require eval failed for zip '"+script+"' with '"+e+"'"))
+                  return
+                }
+              }
+              }
+            }
+
+            //var adscriptfile = zipfile.file("main.js")
+            if (mainscriptfile == null) {
               zipfile = null
               curlify.localVars.zipfile = null
               reject(Error("require failed for '"+script+"' with 'main.js not found inside zip'"))
               return
             }
             //console.log("require adscript file",adscriptfile.asText())
-            var scriptobject = null
+            /*
             try {
-              scriptobject = eval(adscriptfile.asText())
+              mainscriptobject = eval(adscriptfile.asText())
             } catch (e) {
               zipfile = null
               curlify.localVars.zipfile = null
               reject(Error("require eval failed for zip '"+script+"' with '"+e+"'"))
               return
             }
+            */
+
             //console.log("require scriptobject",scriptobject)
-            resolve(scriptobject)
+            resolve(mainscriptobject)
             //zipfile = null
           })
 
         // .js / jsonp file - all other types handled as a script
         } else /*if (script.slice(-3) == ".js")*/ {
 
-          // create element for cache purposes. NB: this means url-fetched .js files will be cached
-          element = document.createElement('script')
-          element.setAttribute('id',scriptid)
-          element.setAttribute('type',"text/javascript")
+          if (zipfile != null) {
 
-          document.head.appendChild(element);
-          appendedElements.push(scriptid)
+            var scriptfile = zipfile.file( script )
+            if (scriptfile == null) {
+              reject(Error("require with zip failed for script "+script))
+              return
+            }
+            
+            var scriptobject = null
+            try {
+              scriptobject = eval(scriptfile.asText())
+            } catch (e) {
+              reject(Error("require with zip failed for script "+script+" with "+e))
+              return
+            }
 
-          if (script.slice(-3) == ".js") {
-            createCORSRequest('GET', script)
-              .then( function(response)
-              {
-                try {
-                  element.scriptobject = eval(response)
-                } catch (e) {
-                  reject(Error("require eval failed for '"+script+"' with '"+e+"'",response))
-                  return
-                }
-                resolve(element.scriptobject)
-              }, function(error) {
-                reject(Error("require load failed for '"+script+"' with '"+error+"'"))
-                return
-              })
+            resolve(scriptobject)
+            return
+
           } else {
-            element.setAttribute('src',script)
-            element.onload = function() {
-              resolve()
+
+            // create element for cache purposes. NB: this means url-fetched .js files will be cached
+            element = document.createElement('script')
+            element.setAttribute('id',scriptid)
+            element.setAttribute('type',"text/javascript")
+
+            document.head.appendChild(element);
+            appendedElements.push(scriptid)
+
+            if (script.slice(-3) == ".js") {
+              createCORSRequest('GET', script)
+                .then( function(response)
+                {
+                  try {
+                    element.scriptobject = eval(response)
+                  } catch (e) {
+                    reject(Error("require eval failed for '"+script+"' with '"+e+"'",response))
+                    return
+                  }
+                  resolve(element.scriptobject)
+                }, function(error) {
+                  reject(Error("require load failed for '"+script+"' with '"+error+"'"))
+                  return
+                })
+            } else {
+              element.setAttribute('src',script)
+              element.onload = function() {
+                resolve()
+              }
+              element.onerror = function() {
+                reject(Error("require failed for '"+script+"'"))
+              }
             }
-            element.onerror = function() {
-              reject(Error("require failed for '"+script+"'"))
-            }
+
           }
 
         /*} else {
@@ -557,10 +708,12 @@
 
   // PUBLIC FUNCTIONS
 
+  /*
   // this is really only for object.js
   curlify.requestRender = function() {
     renderRequested = true
   }
+  */
 
   curlify.render = function() {
 
@@ -573,19 +726,20 @@
     //zipfile = null
     //curlify.localVars.zipfile = null
 
-    renderRequested = false
-
+    //renderRequested = false
+    /*
     //gl.colorMask(true, true, true, true);
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.disable(gl.DEPTH_TEST);
     //gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE)
     gl.cullFace(gl.FRONT);
+    */
 
-    //console.log(layoutOffset.x,layoutOffset.y,layoutWidth,layoutHeight)
+    //console.log(layoutOffset.x,layoutOffset.y,layoutWidth,layoutHeight,glcanvas.width,glcanvas.height)
+    //gl.viewport(0, 0, layoutWidth, layoutHeight)
+
     gl.viewport(layoutOffset.x, layoutOffset.y, layoutWidth, layoutHeight)
-    
+
     scene.render()
 
     /*
@@ -648,7 +802,7 @@
 
   curlify.start = function(parameters) {
 
-    console.log("curlify.start",parameters,revision)
+    console.log("curlify.start",parameters,revision,Date.now())
 
     if ( running ) curlify.stop()
     running = true
@@ -666,12 +820,13 @@
     glcanvas = parameters.canvas ? document.getElementById(parameters.canvas) : currentScript.parentNode
     curlify.localVars.glcanvas = glcanvas
     curlify.localVars.autosize = parameters.autosize
+
+    var realToCSSPixels = window.devicePixelRatio || 1;
+    //realToCSSPixels = 1
+    // TODO: fix pointers / fbos - layout is wrong in other words
+    scaleMulti = sys.ismobile.any() ? realToCSSPixels : 2
     if(parameters.autosize === true)
     {
-      var realToCSSPixels = window.devicePixelRatio || 1;
-      //realToCSSPixels = 1
-      // TODO: fix pointers / fbos - layout is wrong in other words
-      scaleMulti = realToCSSPixels
       var scale=1/window.devicePixelRatio;
       if(sys.ismobile.Android() && ! sys.ismobile.FireFox() || sys.ismobile.iOS()) // All webkit browsers handle zoom very nicely
       {
@@ -716,6 +871,8 @@
       glcanvas.addEventListener ("mouseout", mouseout, false);
     }
 
+    glcanvas.addEventListener("wheel", wheelHandler, false);
+
     camera = createProjectionAndView(screenWidth,screenHeight,3,100);
     curlify.localVars.camera = camera
 
@@ -738,6 +895,7 @@
         orientationChanged()
     }, false);
 
+
     //window.addEventListener('orientationchange', orientationChanged, false);
     require( parameters.script )
       .then( function(scriptobject)
@@ -749,10 +907,18 @@
         zipfile = null
         curlify.localVars.zipfile = null
 
+        if (parameters.framerate == 0) return
+
         var framerate = (parameters.framerate ? parameters.framerate : 60)
+        console.log("setting interval",parameters,framerate,parameters.framerate,Date.now())
+
         //window.requestAnimationFrame( curlify.render )
         curlify.intervalId = window.setInterval( curlify.render, 1000/framerate )
         //curlify.render()
+      },
+      function(e) {
+        console.log(e)
+        alert( "Could not load initial script: "+parameters.script )
       }
     )
   }

@@ -12,6 +12,8 @@
     var scene = curlify.getModule("scene")
     var animator = curlify.getModule("animator")
     var sys = curlify.getModule("sys")
+    var mat4 = curlify.getModule("mat4")
+    var vec3 = curlify.getModule("vec3")
 
     function array_move(array, old_index, new_index) {
         if (new_index >= array.length) {
@@ -27,8 +29,9 @@
     return {
       new : function(ident,width,height) {
 
+
         eval(curlify.extract(curlify.localVars,"curlify.localVars"))
-        
+
         // create as monitored objects for animation optimisations (ie. don't draw if not needed)
         // -- turns out this is quite slow :(
         /*
@@ -83,8 +86,9 @@
           origo : {x:0,y:0,z:0},//new monitored_vec3,//
           size : {width:width==null?screenWidth:width, height:height==null?screenHeight:height},//new monitored_size(width,height),//
           children : [],
-          active : true,
-          visible : true,
+          active : true, // pointers
+          visible : true, // draw
+          disabled : false, // step
           alpha : 1,
           /*
           visible_value : true,
@@ -106,6 +110,8 @@
           modelViewMatrix : mat4.create(),
           origoMatrix : mat4.create(),
           translateScale : camera.translateScale,
+
+          preUpdateModelMatrix : mat4.create(),
 
           anim : animator.new(),
           timervalue : 0,
@@ -138,6 +144,8 @@
           update : function() {
             //console.log("update : "+this.identifier,this.size.width,this.size.height)
 
+            mat4.copy(this.preUpdateModelMatrix,this.modelMatrix)
+
             if (this.parent != null && this.parent.modelViewMatrix != null) {
               this.viewMatrix = this.parent.modelViewMatrix;
             }
@@ -155,6 +163,7 @@
               mat4.multiply( this.modelViewMatrix, this.modelViewMatrix, this.modelMatrix );
             }
 
+            if (!curlify.renderRequired && !mat4.equals(this.modelMatrix,this.preUpdateModelMatrix)) curlify.renderRequired = true
           },
 
           updateGlStates : function() {
@@ -189,6 +198,8 @@
           stepTree : function() {
             //console.log("stepTree : "+this.identifier+" children : "+this.children.length)
             
+            if (this.disabled == true) return
+
             this.anim.step()
 
             if (this.preStep != null) this.preStep()
@@ -197,6 +208,7 @@
               this.laststep = sys.timestamp()
               this.step(timedelta)
             }
+            this.update();
 
             for (var i = 0; i < this.children.length; i++) {
               this.children[i].stepTree();
@@ -214,7 +226,6 @@
 
             if (this.visible == false) return
 
-            this.update();
             if (this.disableGlStateUpdates != true) this.updateGlStates()
 
             if (this.preDraw != null) this.preDraw();
@@ -234,16 +245,21 @@
 
           layoutChangedTree : function() {
 
+            if (this.layoutChanged != null) this.layoutChanged()
             for (var i=0;i<this.children.length;i++) {
               this.children[i].layoutChangedTree()
             }
-            if (this.layoutChanged != null) this.layoutChanged()
 
           },
 
           press : function(x,y) {
 
             var used = false
+
+            for (var i=this.children.length-1; i >= 0; i--) {
+              if (this.children[i].active) used = this.children[i].press(x,y)
+            }
+            
             if (this.relativePress != null) {
               var relx = (x-screenWidth/2)-this.absolutex()
               var rely = (y-screenHeight/2)-this.absolutey()
@@ -251,16 +267,16 @@
             }
             if (this.absolutePress != null) used = this.absolutePress(x,y)
 
-            for (var i=this.children.length-1; i >= 0; i--) {
-              if (this.children[i].active) used = this.children[i].press(x,y)
-            }
-            
             return used
           },
 
           drag : function(x,y) {
 
             var used = false
+            for (var i=this.children.length-1; i >= 0; i--) {
+              if (this.children[i].active) used = this.children[i].drag(x,y)
+            }
+            
             if (this.relativeDrag != null) {
               var relx = (x-screenWidth/2)-this.absolutex()
               var rely = (y-screenHeight/2)-this.absolutey()
@@ -268,26 +284,22 @@
             }
             if (this.absoluteDrag != null ) used = this.absoluteDrag(x,y)
             
-            for (var i=this.children.length-1; i >= 0; i--) {
-              if (this.children[i].active) used = this.children[i].drag(x,y)
-            }
-            
             return used
           },
 
           release : function(x,y) {
 
             var used = false
+            for (var i=this.children.length-1; i >= 0; i--) {
+              if (this.children[i].active) used = this.children[i].release(x,y)
+            }
+            
             if (this.relativeRelease != null) {
               var relx = (x-screenWidth/2)-this.absolutex()
               var rely = (y-screenHeight/2)-this.absolutey()
               used = this.relativeRelease(relx,rely)
             }
             if (this.absoluteRelease != null) used = this.absoluteRelease(x,y)
-            
-            for (var i=this.children.length-1; i >= 0; i--) {
-              if (this.children[i].active) used = this.children[i].release(x,y)
-            }
             
             return used
           },
@@ -329,6 +341,103 @@
             }
             if (this != scene.getpointerStealer() && this.pointerReset != null) this.pointerReset()
           },
+
+          hoverTree : function(x,y) {
+
+            var uselist = []
+            
+            for (var i=this.children.length-1; i >= 0; i--) {
+              var used = []
+              if (this.children[i].active) used = this.children[i].hoverTree(x,y)
+              if (used.length > 0) {
+                for (var k=0;k<used.length;k++) uselist.push( used[k] )
+              }
+            }
+
+            if (this.hit != null) {
+              var relx = (x-screenWidth/2)-this.absolutex()
+              var rely = (y-screenHeight/2)-this.absolutey()
+              if (this.hit(relx,rely)) uselist.push( this )
+            }
+
+            return uselist
+          },
+
+          unfocused_press : function(x,y) {
+
+            var used = false
+
+            for (var i=this.children.length-1; i >= 0; i--) {
+              if (this.children[i].active) used = this.children[i].unfocused_press(x,y)
+            }
+            
+            if (this.unfocused_relativePress != null) {
+              var relx = (x-screenWidth/2)-this.absolutex()
+              var rely = (y-screenHeight/2)-this.absolutey()
+              used = this.unfocused_relativePress(relx,rely)
+            }
+            if (this.unfocused_absolutePress != null) used = this.unfocused_absolutePress(x,y)
+
+            return used
+          },
+
+          unfocused_drag : function(x,y) {
+
+            var used = false
+            for (var i=this.children.length-1; i >= 0; i--) {
+              if (this.children[i].active) used = this.children[i].unfocused_drag(x,y)
+            }
+            
+            if (this.unfocused_relativeDrag != null) {
+              var relx = (x-screenWidth/2)-this.absolutex()
+              var rely = (y-screenHeight/2)-this.absolutey()
+              used = this.unfocused_relativeDrag(relx,rely)
+            }
+            if (this.unfocused_absoluteDrag != null ) used = this.unfocused_absoluteDrag(x,y)
+            
+            return used
+          },
+
+          unfocused_release : function(x,y) {
+
+            var used = false
+            for (var i=this.children.length-1; i >= 0; i--) {
+              if (this.children[i].active) used = this.children[i].unfocused_release(x,y)
+            }
+            
+            if (this.unfocused_relativeRelease != null) {
+              var relx = (x-screenWidth/2)-this.absolutex()
+              var rely = (y-screenHeight/2)-this.absolutey()
+              used = this.unfocused_relativeRelease(relx,rely)
+            }
+            if (this.unfocused_absoluteRelease != null) used = this.unfocused_absoluteRelease(x,y)
+            
+            return used
+          },
+          //käy kaikki läpi
+          //listaan osuneet
+          //poimitaan alin
+
+          //focusoidulle press/drag/release
+
+          //defaultissa toimii kuten toivottu
+          //scrollablessa hyvä niin kauan kun yritetään liikuttaa
+          // - jotain eventtiä tarvitsee passata koko puulle
+          // -- tyyliin press mutta niin ettei se tee
+
+          //hover - etsi fokusoitavat - valitse päälimmäinen
+          //
+
+          // ylösalas scroll
+          // vasenoikea scroll
+          // button
+
+          // button - press,drag
+          // vasenoikea - unfocused_press,unfocused_drag
+          // ylösalas - unfocused_press,unfocused_drag
+
+          // hoverfocusoidulle eventit
+          // jos joku unfocused päättääkin että tarvitsee focuksen, stealpointers
 
           // x position within parent
           x : function() {
@@ -410,12 +519,26 @@
             if (this.postDeactivate != null) this.postDeactivate()
           },
 
+          removeTree : function() {
+
+            for (var i=0;i<this.children.length;i++) {
+              this.children[i].removeTree()
+            }
+            this.children = []
+
+            if (this.destroy) this.destroy()
+
+          },
+
           removeSelf : function() {
+
+            this.removeTree()
+
             if (this.parent == null) return
 
             for (var i=0;i<this.parent.children.length;i++) {
               if (this.parent.children[i] == this) {
-                console.log("removing: "+this.identifier+" from "+this.parent.identifier)
+                //console.log("removing: "+this.identifier+" from "+this.parent.identifier)
                 this.parent.children.splice(i,1)
                 break
               }
@@ -432,7 +555,17 @@
                 break;
               }
             }
+          },
 
+          sendToBack : function() {
+            if (this.parent == null) return
+
+            for (var i=0;i<this.parent.children.length;i++) {
+              if (this == this.parent.children[i]) {
+                array_move(this.parent.children,i,0)
+                break;
+              }
+            }
           },
 
         }

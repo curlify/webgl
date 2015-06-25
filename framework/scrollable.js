@@ -58,6 +58,35 @@
           return source
         }
 
+        /*
+        container.unfocused_relativePress = function(x,y) {
+          if (this.hit(x,y)) {
+            if (this.focus != null) this.focus(x,y)
+            this.focused = true
+            return true
+          }
+          return false
+        }
+
+        container.unfocused_relativeDrag = function(x,y) {
+          if (this.focused != true) return false
+          if (this.hit(x,y) != true) {
+            if (this.defocus != null) this.defocus(x,y)
+            this.focused = false
+          } else {
+            if (this.focusdrag != null) this.focusdrag(x,y)
+          }
+          return true
+        }
+        */
+        container.unfocused_relativePress = container.relativePress
+        container.unfocused_relativeDrag = container.relativeDrag
+        container.unfocused_relativeRelease = container.relativeRelease
+
+        container.hover = function() {
+          return false
+        }
+
         container.focus = function(x,y) {
           //print("focus",x,y,this.identifier)
 
@@ -73,7 +102,7 @@
             //instance.moving = false
             container.centeronslots()
           }
-          console.log("DEFOCUS",container.identifier,instance.position.y,instance.targetposition.y)
+          //console.log("DEFOCUS",container.identifier,instance.position.y,instance.targetposition.y)
         }
 
         container.centeronslots = function() {
@@ -108,6 +137,33 @@
             instance.targetposition.x = newx
             instance.targetposition.y = newy
           }
+        }
+
+        container.swipeRight = function(speed) {
+          //console.log("swipeRight",speed)
+          if (container.focused || true) instance.targetposition.x = instance.targetposition.x-container.swipefunc(0,container.swipespeed,speed)
+        }
+
+        container.swipeLeft = function(speed) {
+          //console.log("swipeRight",speed)
+          if (container.focused || true) instance.targetposition.x = instance.targetposition.x+container.swipefunc(0,container.swipespeed,speed)
+        }
+
+        container.swipeUp = function(speed) {
+          //console.log("swipeUp",speed,instance.targetposition.y)
+          if (container.focused || true) instance.targetposition.y = instance.targetposition.y+container.swipefunc(0,container.swipespeed,speed)
+          //console.log("->",instance.targetposition.y)
+        }
+
+        container.swipeDown = function(speed) {
+          //console.log("swipeDown",speed,instance.targetposition.y)
+          if (container.focused || true) instance.targetposition.y = instance.targetposition.y-container.swipefunc(0,container.swipespeed,speed)
+          //console.log("->",instance.targetposition.y)
+        }
+
+        container.wheel = function(dx,dy) {
+          instance.targetposition.x = instance.targetposition.x + dx
+          instance.targetposition.y = instance.targetposition.y + dy
         }
 
         container.step = function(timedelta) {

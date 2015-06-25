@@ -12,6 +12,8 @@
     var animator = curlify.getModule("animator")
     var sys = curlify.getModule("sys")
 
+    var drawstack = []
+
     var scenestack = []
     var fboUpdateList = []
     var sceneanim = animator.new()
@@ -58,20 +60,27 @@
         //var ts = sys.timestamp()
         sceneanim.step()
 
+        drawstack = []
+
         if (sceneanim.animations.length > 0) {
           var prevscene = scenestack[scenestack.length-2]
           prevscene.stepTree()
-          prevscene.drawTree()
+          drastack.push(prevscene)
         }
 
         var target = scenestack[scenestack.length-1]
-        if (target == null) return
+        if (target != null) {
+          target.stepTree()
+          drawstack.push(target)
+        }
 
-        //var ts1 = sys.timestamp()
-        target.stepTree()
-        //var ts2 = sys.timestamp()
-        target.drawTree()
-        //var ts3 = sys.timestamp()
+        if (curlify.renderRequired) {
+          gl.clearColor(0.0, 0.0, 0.0, 0.0);
+          gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+          for (var i=0;i<drawstack.length;i++) {
+            drawstack[i].drawTree()
+          }
+        }
 
         for (var i=0;i<fboUpdateList.length;i++) {
           new function() {
@@ -80,6 +89,10 @@
           }
         }
         fboUpdateList = []
+        
+        curlify.renderRequired = false
+
+        //curlify.renderRequired = false
         //var ts4 = sys.timestamp()
 
         //console.log((ts1-ts)+","+(ts2-ts1)+","+(ts3-ts2)+","+(ts4-ts3))

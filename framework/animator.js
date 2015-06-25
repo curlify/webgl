@@ -66,13 +66,15 @@ var animator = (function() {
           //console.log("request step",this.animations)
 
           //window.requestAnimationFrame(this.step)
-          curlify.requestRender()
+          //curlify.requestRender()
         },
 
         step : function() {
 
           var dead = []
           var now = Date.now()
+
+          if (this.animations.length > 0) curlify.renderRequired = true
 
           var key = null          
           for (var k=0;k<this.animations.length;k++) {
@@ -132,7 +134,7 @@ var animator = (function() {
             this.animations [k].deadline = this.animations [k].deadline + (sys.timestamp() - this.animations [k].pausetimestamp)
           }
           //window.requestAnimationFrame(this.step)
-          curlify.requestRender()
+          //curlify.requestRender()
         },
 
         stop : function() {

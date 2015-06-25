@@ -81,6 +81,8 @@
             instance.texture = source.texture
             instance.image = source.image
 
+            if (source.loadlistener != null) source.loadlistener( instance )
+
             if (instance.size.width == null) instance.size.width = source.size.width
             if (instance.size.height == null) instance.size.height = source.size.height
 
@@ -142,8 +144,19 @@
 
         }
 
+        /*
+        instance.destroy = function() {
+          if (this.texture != null) {
+            console.log("delete image",this.identifier)
+            gl.deleteTexture(this.texture)
+            this.texture = null
+          }
+        }
+        */
+
+
         return instance;
-      }
+      },
 
     }
   })()

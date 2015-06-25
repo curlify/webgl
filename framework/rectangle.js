@@ -11,6 +11,7 @@
 
     var glutils = curlify.getModule("glutils")
     var quad = curlify.getModule("quad")
+    var mat4 = curlify.getModule("mat4")
 
     return {
 

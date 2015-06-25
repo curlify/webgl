@@ -29,27 +29,12 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 
-(function(_global) {
-  "use strict";
+(function() {
 
-  var shim = {};
-  if (typeof(exports) === 'undefined') {
-    if(typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
-      shim.exports = {};
-      define(function() {
-        return shim.exports;
-      });
-    } else {
-      // gl-matrix lives in a browser, define its namespaces in global
-      shim.exports = typeof(window) !== 'undefined' ? window : _global;
-    }
-  }
-  else {
-    // gl-matrix lives in commonjs, define its namespaces in exports
-    shim.exports = exports;
-  }
+  var curScript = document.currentScript || document._currentScript;
+  var curlify = curScript.curlify
 
-  (function(exports) {
+  var glmatrix_modules = (function() {
     /* Copyright (c) 2013, Brandon Jones, Colin MacKenzie IV. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -71,6 +56,8 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+var exports = {}
 
 
 if(!GLMAT_EPSILON) {
@@ -2751,6 +2738,25 @@ mat4.frob = function (a) {
     return(Math.sqrt(Math.pow(a[0], 2) + Math.pow(a[1], 2) + Math.pow(a[2], 2) + Math.pow(a[3], 2) + Math.pow(a[4], 2) + Math.pow(a[5], 2) + Math.pow(a[6], 2) + Math.pow(a[7], 2) + Math.pow(a[8], 2) + Math.pow(a[9], 2) + Math.pow(a[10], 2) + Math.pow(a[11], 2) + Math.pow(a[12], 2) + Math.pow(a[13], 2) + Math.pow(a[14], 2) + Math.pow(a[15], 2) ))
 };
 
+mat4.equals = function(out, a) {
+    return out[0] == a[0] &&
+    out[1] == a[1] &&
+    out[2] == a[2] &&
+    out[3] == a[3] &&
+    out[4] == a[4] &&
+    out[5] == a[5] &&
+    out[6] == a[6] &&
+    out[7] == a[7] &&
+    out[8] == a[8] &&
+    out[9] == a[9] &&
+    out[10] == a[10] &&
+    out[11] == a[11] &&
+    out[12] == a[12] &&
+    out[13] == a[13] &&
+    out[14] == a[14] &&
+    out[15] == a[15]
+};
+
 
 if(typeof(exports) !== 'undefined') {
     exports.mat4 = mat4;
@@ -2758,9 +2764,15 @@ if(typeof(exports) !== 'undefined') {
 ;
 
 
+return exports
 
 
 
+  })();
 
-  })(shim.exports);
-})(this);
+  for (k in glmatrix_modules) {
+    console.log('initializing '+k+' module')
+    curlify.module(k,glmatrix_modules[k])
+  }
+
+})();

@@ -14,6 +14,7 @@
     var quad = curlify.getModule("quad")
     var sys = curlify.getModule("sys")
     var object = curlify.getModule("object")
+    var mat4 = curlify.getModule("mat4")
 
     return {
 
@@ -127,6 +128,8 @@
 
           var previousscreenWidth = curlify.localVars.screenWidth
           var previousscreenHeight = curlify.localVars.screenHeight
+          var previousviewWidth = curlify.localVars.viewWidth
+          var previousviewHeight = curlify.localVars.viewHeight
           var previouslayoutwidth = curlify.localVars.layoutWidth
           var previouslayoutheight = curlify.localVars.layoutHeight
           var previouslayoutoffset = {x:curlify.localVars.layoutOffset.x,y:curlify.localVars.layoutOffset.y}
@@ -138,11 +141,15 @@
 
           curlify.localVars.screenWidth = instance.size.width
           curlify.localVars.screenHeight = instance.size.height
+          curlify.localVars.viewWidth = instance.size.width
+          curlify.localVars.viewHeight = instance.size.height
           curlify.localVars.layoutWidth = instance.size.width
           curlify.localVars.layoutHeight = instance.size.height
           curlify.localVars.layoutOffset = {x:0,y:0}
           screenWidth = curlify.localVars.screenWidth 
           screenHeight = curlify.localVars.screenHeight
+          viewWidth = curlify.localVars.viewWidth 
+          viewHeight = curlify.localVars.viewHeight
           layoutWidth = curlify.localVars.layoutWidth 
           layoutHeight = curlify.localVars.layoutHeight
           layoutOffset = curlify.localVars.layoutOffset
@@ -156,11 +163,15 @@
 
           curlify.localVars.screenWidth = previousscreenWidth
           curlify.localVars.screenHeight = previousscreenHeight
+          curlify.localVars.viewWidth = previousviewWidth
+          curlify.localVars.viewHeight = previousviewHeight
           curlify.localVars.layoutWidth = previouslayoutwidth
           curlify.localVars.layoutHeight = previouslayoutheight
           curlify.localVars.layoutOffset = previouslayoutoffset
           screenWidth = curlify.localVars.screenWidth 
           screenHeight = curlify.localVars.screenHeight
+          viewWidth = curlify.localVars.viewWidth 
+          viewHeight = curlify.localVars.viewHeight
           layoutWidth = curlify.localVars.layoutWidth 
           layoutHeight = curlify.localVars.layoutHeight
           layoutOffset = curlify.localVars.layoutOffset

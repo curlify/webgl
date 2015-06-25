@@ -21,6 +21,7 @@
         
         var focusable = image.new(source)
         focusable.focused = false
+        focusable.hovered = false
         focusable.identifier = "button : "+source
 
         focusable.hit = function(x,y) {
@@ -54,6 +55,22 @@
           if (this.defocus != null) this.defocus(x,y)
           this.focused = false
           return true
+        }
+
+        focusable.hover = function(x,y) {
+          var used = false
+          if (this.hit(x,y)) {
+            if (this.hovered == false && this.focus != null) this.focus(x,y)
+            this.hovered = true
+            used = true
+          } else {
+            if (this.hovered && this.defocus != null) {
+              this.defocus(x,y)
+              used = true
+            }
+            this.hovered = false
+          }
+          return used
         }
 
         focusable.pointerReset = function() {

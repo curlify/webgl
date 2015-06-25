@@ -14,6 +14,7 @@
 
         var focusable = quad.new(ident,width,height);
         focusable.focused = false
+        focusable.hovered = false
 
         focusable.hit = function(x,y) {
           if (x < -this.width()/2 || x > this.width()/2 || y < -this.height()/2 || y > this.height()/2) return false
@@ -46,6 +47,22 @@
           if (this.defocus != null) this.defocus(x,y)
           this.focused = false
           return true
+        }
+
+        focusable.hover = function(x,y) {
+          var used = false
+          if (this.hit(x,y)) {
+            if (this.hovered == false && this.focus != null) this.focus(x,y)
+            this.hovered = true
+            used = true
+          } else {
+            if (this.hovered && this.defocus != null) {
+              this.defocus(x,y)
+              used = true
+            }
+            this.hovered = false
+          }
+          return used
         }
 
         focusable.pointerReset = function() {

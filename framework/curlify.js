@@ -8,11 +8,11 @@ Curlify - A javascript webgl framework
 */
 (function() {
 
-  var curScript = document.currentScript || document._currentScript;
+  document.currentScript = document.currentScript || document._currentScript || document.getElementsByTagName('script')[document.getElementsByTagName('script').length-1];
 
-  console.log("initialize curlify",curScript)
+  console.log("initialize curlify",document.currentScript,Date.now())
 
-  curScript.curlify = {
+  document.currentScript.curlify = {
 
     modules : {},
 
@@ -68,21 +68,21 @@ Curlify - A javascript webgl framework
   }
 
   // local variables for scripts local scope - evil
-  curScript.curlify.localVars.sensors = {acceleration:null,rotationRate:null,orientation:{alpha:0,beta:0,gamma:0}, damped_orientation:{alpha:0,beta:0,gamma:0,inertia:10}}
-  curScript.curlify.localVars.zipfile = null
-  curScript.curlify.localVars.layoutWidth = null
-  curScript.curlify.localVars.layoutHeight = null
-  curScript.curlify.localVars.layoutOffset = {x:0,y:0}
-  curScript.curlify.localVars.layoutScale = {x:1,y:1}
+  document.currentScript.curlify.localVars.sensors = {acceleration:{x:0,y:0,z:0},rotationRate:{x:0,y:0,z:0},orientation:{alpha:0,beta:0,gamma:0}, damped_orientation:{alpha:0,beta:0,gamma:0,inertia:10}}
+  document.currentScript.curlify.localVars.zipfile = null
+  document.currentScript.curlify.localVars.layoutWidth = null
+  document.currentScript.curlify.localVars.layoutHeight = null
+  document.currentScript.curlify.localVars.layoutOffset = {x:0,y:0}
+  document.currentScript.curlify.localVars.layoutScale = {x:1,y:1}
 
-  curScript.curlify.localVars.gl = null
-  curScript.curlify.localVars.camera = null
+  document.currentScript.curlify.localVars.gl = null
+  document.currentScript.curlify.localVars.camera = null
 
-  curScript.curlify.localVars.viewWidth = null
-  curScript.curlify.localVars.viewHeight = null
+  document.currentScript.curlify.localVars.viewWidth = null
+  document.currentScript.curlify.localVars.viewHeight = null
 
-  curScript.curlify.localVars.screenWidth = null
-  curScript.curlify.localVars.screenHeight = null
+  document.currentScript.curlify.localVars.screenWidth = null
+  document.currentScript.curlify.localVars.screenHeight = null
 
 
 })()
