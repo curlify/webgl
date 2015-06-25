@@ -1,9 +1,10 @@
 uglifyjs \
+CanvasInput.js \
 jszip.framework.js \
 jszip-utils.framework.js \
-gl-matrix.framework.js \
 webgl-obj-loader.js \
 framework/curlify.js \
+gl-matrix.framework.js \
 framework/glutils.js \
 framework/sys.js \
 framework/fps.js \
