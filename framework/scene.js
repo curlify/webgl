@@ -20,6 +20,8 @@
     var pointerStealer = null
 
     var lastframe = 0
+    var glflushtime = 0
+
     var move = function(source,target,inertia,timedelta) {
       if (timedelta > 100) timedelta = 100
       var dir = 1
@@ -46,12 +48,14 @@
 
     return {
 
-      render : function() {
+      render : function(offset_x,offset_y,width,height) {
 
         var gl = curlify.localVars.gl
 
         var td = sys.timestamp()-lastframe
         lastframe = sys.timestamp()
+
+        glflushtime = glflushtime - td
 
         damp(curlify.localVars.sensors.orientation,curlify.localVars.sensors.damped_orientation,"alpha",180,td)
         damp(curlify.localVars.sensors.orientation,curlify.localVars.sensors.damped_orientation,"beta",180,td)
@@ -74,12 +78,14 @@
           drawstack.push(target)
         }
 
-        if (curlify.renderRequired) {
+        if (curlify.renderRequired || glflushtime > 0 ) {
+          gl.viewport(offset_x,offset_y,width,height)
           gl.clearColor(0.0, 0.0, 0.0, 0.0);
           gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
           for (var i=0;i<drawstack.length;i++) {
             drawstack[i].drawTree()
           }
+          if (curlify.renderRequired) glflushtime = 500
         }
 
         for (var i=0;i<fboUpdateList.length;i++) {
