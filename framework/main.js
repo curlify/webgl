@@ -738,9 +738,7 @@
     //console.log(layoutOffset.x,layoutOffset.y,layoutWidth,layoutHeight,glcanvas.width,glcanvas.height)
     //gl.viewport(0, 0, layoutWidth, layoutHeight)
 
-    gl.viewport(layoutOffset.x, layoutOffset.y, layoutWidth, layoutHeight)
-
-    scene.render()
+    scene.render( layoutOffset.x, layoutOffset.y, layoutWidth, layoutHeight )
 
     /*
     glclearcolor = glclearcolor + 0.01
