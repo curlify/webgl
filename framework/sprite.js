@@ -108,6 +108,8 @@
           result.spriteheight=h
           result.name = "array "+source.length
 
+          curlify.renderRequired = true
+
         } else {
           var sheet = image.loadImage(source)
           sheet.onload = function() {
