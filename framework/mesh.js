@@ -108,6 +108,9 @@
               gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
               gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
               instance.loaded = true
+
+              curlify.renderRequired = true
+              if (instance.mesh != null && instance.onload != null) instance.onload()
             }
             img.onerror = function() {
               console.log("ERROR: texture load failed for mesh "+source+" : "+texture)
@@ -132,6 +135,8 @@
             instance.mesh = new OBJ.Mesh(zipEntry.asBinary())
             OBJ.initMeshBuffers(gl, instance.mesh);
 
+            if (instance.loaded && instance.onload != null) instance.onload()
+
           } else {
 
             console.log("download load",texture)
@@ -140,6 +145,8 @@
             }, function(meshes) {
               instance.mesh = meshes.model
               OBJ.initMeshBuffers(gl, instance.mesh);
+
+              if (instance.loaded && instance.onload != null) instance.onload()
             });
 
           }
