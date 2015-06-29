@@ -131,7 +131,7 @@
             instance.loaded = true
             if (instance.onload != null) instance.onload()
 
-            curlify.repaintRequired = true
+            curlify.renderRequired = true
             instance.resolve(instance)
           }
           instance.image.onerror = function() {
