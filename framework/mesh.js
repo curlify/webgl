@@ -135,7 +135,11 @@
             instance.mesh = new OBJ.Mesh(zipEntry.asBinary())
             OBJ.initMeshBuffers(gl, instance.mesh);
 
-            if (instance.loaded && instance.onload != null) instance.onload()
+            if (instance.loaded) {
+              window.setTimeout( function() {
+                if (instance.onload != null) instance.onload()
+              }, 10)
+            }
 
           } else {
 
