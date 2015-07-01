@@ -574,30 +574,42 @@
               var file = jsfiles[i]
               var scripto = null
               var e = null
-              try {
-                scripto = eval(file.asText())
-              } catch (e) {
-                console.log("error evaluating file "+file.name+" with '"+e+"'")
-              }
-              if (file.name == "main.js") {
-                mainscriptfile = file
-                mainscriptobject = scripto
-                if (e) {
-                  zipfile = null
-                  curlify.localVars.zipfile = null
-                  reject(Error("require eval failed for zip '"+script+"' with '"+e+"'"))
-                  return
+              if (file.name != "main.js") {
+                try {
+                  scripto = eval(file.asText())
+                } catch (e) {
+                  console.log("error evaluating file "+file.name+" with '"+e+"'")
                 }
+              } else {
+                mainscriptfile = file
               }
               }
             }
 
             //var adscriptfile = zipfile.file("main.js")
             if (mainscriptfile == null) {
+
               zipfile = null
               curlify.localVars.zipfile = null
               reject(Error("require failed for '"+script+"' with 'main.js not found inside zip'"))
               return
+
+            } else {
+
+              var e = null
+              try {
+                mainscriptobject = eval(mainscriptfile.asText())
+              } catch (e) {
+                console.log("error evaluating file "+mainscriptfile.name+" with '"+e+"'")
+              }
+              
+              if (e) {
+                zipfile = null
+                curlify.localVars.zipfile = null
+                reject(Error("require eval failed for zip '"+script+"' with '"+e+"'"))
+                return
+              }
+
             }
             //console.log("require adscript file",adscriptfile.asText())
             /*
@@ -615,6 +627,7 @@
             resolve(mainscriptobject)
             //zipfile = null
           })
+
 
         // .js / jsonp file - all other types handled as a script
         } else /*if (script.slice(-3) == ".js")*/ {
