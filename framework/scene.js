@@ -69,7 +69,7 @@
         if (sceneanim.animations.length > 0) {
           var prevscene = scenestack[scenestack.length-2]
           prevscene.stepTree()
-          drastack.push(prevscene)
+          drawstack.push(prevscene)
         }
 
         var target = scenestack[scenestack.length-1]
