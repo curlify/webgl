@@ -69,7 +69,7 @@
         }
       },      
 
-      new : function(identifier,w,h,disable_alpha) {
+      new : function(identifier,w,h,disable_alpha,enable_depth_buffer) {
 
         var gl = curlify.localVars.gl
 
@@ -106,6 +106,13 @@
         gl.texImage2D(gl.TEXTURE_2D, 0, colormode, instance.framebuffer.width, instance.framebuffer.height, 0, colormode, gl.UNSIGNED_BYTE, null);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, instance.texture, 0);
 
+        if (enable_depth_buffer) {
+          var depthBuffer = gl.createRenderbuffer();
+          gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+          gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, instance.framebuffer.width, instance.framebuffer.height);      
+          gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+        }
+
         gl.bindTexture(gl.TEXTURE_2D, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -122,9 +129,19 @@
           scene.addFboUpdate(instance)
         }
 
-        instance.renderFbo = function() {
+        instance.prepareFbo = function() {
           gl.bindTexture(gl.TEXTURE_2D, null);
+          gl.viewport(0, 0, instance.size.width, instance.size.height)
+          gl.bindFramebuffer(gl.FRAMEBUFFER, instance.framebuffer);
+          gl.clearColor(0.0, 0.0, 0.0, 0.0);
+          gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+        }
+
+        instance.renderFbo = function() {
+
           var previousframebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING)
+
+          instance.prepareFbo()
 
           var previousscreenWidth = curlify.localVars.screenWidth
           var previousscreenHeight = curlify.localVars.screenHeight
@@ -133,11 +150,6 @@
           var previouslayoutwidth = curlify.localVars.layoutWidth
           var previouslayoutheight = curlify.localVars.layoutHeight
           var previouslayoutoffset = {x:curlify.localVars.layoutOffset.x,y:curlify.localVars.layoutOffset.y}
-
-          gl.viewport(0, 0, instance.size.width, instance.size.height)
-          gl.bindFramebuffer(gl.FRAMEBUFFER, instance.framebuffer);
-          gl.clearColor(0.0, 0.0, 0.0, 0.0);
-          gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
 
           curlify.localVars.screenWidth = instance.size.width
           curlify.localVars.screenHeight = instance.size.height
@@ -182,13 +194,15 @@
           instance.lastUpdated = sys.timestamp()
         }
 
+
         instance.drawTree = function() {
           //var timedelta = Math.min(sys.timestamp()-this.lastdraw,60)
           //this.lastdraw = sys.timestamp()
 
           if (this.visible == false) return
 
-          this.update();
+          if (this.disableGlStateUpdates != true) this.updateGlStates()
+
           if (this.preDraw != null) this.preDraw();
 
           if (this.dobypassFbo) {
@@ -200,9 +214,10 @@
           } else {
             if (this.draw != null) this.draw();
           }
-          if (this.postDraw != null) this.postDraw();
-        }
 
+          if (this.postDraw != null) this.postDraw();
+
+        }
 
         return instance;
       }
