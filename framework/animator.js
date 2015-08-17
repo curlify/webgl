@@ -15,7 +15,9 @@ var animator = (function() {
     time : true,
     ease : true,
     start : true,
+    init : true,
     onComplete : true,
+    onUpdate : true,
   }
 
   return {
@@ -35,17 +37,24 @@ var animator = (function() {
 
           var keys = []
           var init = []
+          var current = []
           var final = []
           // gather initial values
           for (var key in config) {
             var value = config[key]
             if (CONFIG_KEYS[key] == null) {
 
-              if (target[key] == null) {
+              if (config.init && config.init[key] != null) {
+                keys.push( key )
+                init.push( config.init[key] )
+                current.push( config.init[key] )
+                final.push( value )
+              } else if (target[key] == null) {
                 console.log("ERROR: Animated property cannot be initially nil : "+key)
               } else {
                 keys.push( key )
                 init.push( target[key] )
+                current.push( target[key] )
                 final.push( value )
               }
             }
@@ -60,6 +69,7 @@ var animator = (function() {
               config : config,
               init : init,
               final : final,
+              current : current,
             }
           )
 
@@ -103,9 +113,10 @@ var animator = (function() {
               var animkey = animation.keys[i]
               var initial = animation.init[i]
               var finalval = animation.final[i]
-              animation.target[animkey] = animation.config.ease( initial, finalval, pos )
+              animation.current[i] = animation.config.ease( initial, finalval, pos )
+              animation.target[animkey] = animation.current[i]
             }
-            
+            if (animation.config.onUpdate) animation.config.onUpdate( animation )
             
           }
 
