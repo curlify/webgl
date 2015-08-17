@@ -26,7 +26,10 @@
         if (zipfile != null) {
           var zipEntry = zipfile.file(source)
           //console.log("image.source zip",zipEntry,source,zipfile)
-          image.src = 'data:image/jpg;base64,' + JSZip.base64.encode(zipEntry.asBinary())
+
+          var datatype = "data:image/jpg"
+          if (source.slice(-4) == ".svg") datatype = "data:image/svg+xml"
+          image.src = datatype+';base64,' + JSZip.base64.encode(zipEntry.asBinary())
         } else {
           //console.log("image source file")
           image.crossOrigin = 'anonymous';
