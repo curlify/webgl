@@ -358,7 +358,7 @@
 
   function wheelHandler(e) {
     //console.log(e)
-    e.preventDefault()
+    if (allowDefaultPointerEvent == false) e.preventDefault()
     
     if (scene.isAnimating() || hoverlist.length == 0) return
 
@@ -375,10 +375,8 @@
   function resizeCanvas() {
     //console.log("resizeCanvas",glcanvas)
 
-    //var realToCSSPixels = window.devicePixelRatio || 1;
-
-    var width = Math.floor(glcanvas.clientWidth*scaleMulti);
-    var height = Math.floor(glcanvas.clientHeight*scaleMulti);
+    var width = Math.floor(glcanvas.clientWidth);
+    var height = Math.floor(glcanvas.clientHeight);
 
     //console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" * "+window.devicePixelRatio+" "+width+"x"+height+" "+glcanvas.width+"x"+glcanvas.height)
 
@@ -408,8 +406,8 @@
     layoutOffset.x = (width-layoutWidth)/2,
     layoutOffset.y = (height-layoutHeight)/2
 
-    glcanvas.width = width
-    glcanvas.height = height
+    glcanvas.width = glcanvas.clientWidth//width
+    glcanvas.height = glcanvas.clientHeight//height
 
     //console.log("resized",glcanvas.width,glcanvas.height,viewWidth,viewHeight)
     curlify.localVars.layoutWidth = layoutWidth
@@ -425,6 +423,7 @@
 
     console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" "+screenWidth+"x"+screenHeight+" "+layoutWidth+"x"+layoutHeight+" "+glcanvas.width+","+glcanvas.height+" "+viewWidth+"x"+viewHeight)
 
+    curlify.renderRequired = true
     scene.layoutChanged()
   }
   curlify.resizeCanvas = resizeCanvas
@@ -832,12 +831,13 @@
     curlify.localVars.glcanvas = glcanvas
     curlify.localVars.autosize = parameters.autosize
 
-    var realToCSSPixels = window.devicePixelRatio || 1;
-    //realToCSSPixels = 1
-    // TODO: fix pointers / fbos - layout is wrong in other words
-    scaleMulti = sys.ismobile.any() ? realToCSSPixels : 2
     if(parameters.autosize === true)
     {
+      var realToCSSPixels = window.devicePixelRatio || 1;
+      //realToCSSPixels = 1
+      // TODO: fix pointers / fbos - layout is wrong in other words
+      scaleMulti = realToCSSPixels
+
       var scale=1/window.devicePixelRatio;
       if(sys.ismobile.Android() && ! sys.ismobile.FireFox() || sys.ismobile.iOS()) // All webkit browsers handle zoom very nicely
       {
