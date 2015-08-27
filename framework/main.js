@@ -151,27 +151,11 @@
     if (target == null) return
     var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
 
-    //console.log("mousedown",rel.x,rel.y)
-    // find out which objects are hit
-    var list = target.hoverTree(rel.x,rel.y)
-    hoverlist = list
-    if (list.length > 0) {
-      hoverfocus = list[0]
-
-      // send press/drag events to hit object
-      hoverfocus.press(rel.x,rel.y)
-      hoverfocus.drag(rel.x,rel.y)
-
-      //console.log("hoverfocus:",hoverfocus)
-    } else {
-      hoverfocus = null
-    }
-
+    //console.log("rel: "+rel.x,rel.y)
     swipestart(rel)
+    target.press(rel.x,rel.y)
+    target.drag(rel.x,rel.y)
 
-    // original target gets unfocused events
-    target.unfocused_press(rel.x,rel.y)
-    target.unfocused_drag(rel.x,rel.y)
   }
 
   function mouseup(e) {
@@ -185,13 +169,23 @@
     var target = scene.getPointerUser()
     if (target == null) return
     var rel = {x: (e.clientX*scaleMulti-tgt.left-layoutOffset.x)*layoutScale.x, y: (e.clientY*scaleMulti-tgt.top-layoutOffset.y)*layoutScale.y}
+
+    if (hoverfocus != null) {
+      if (hoverfocus.click != null) {
+        var relx = (rel.x-screenWidth/2)-hoverfocus.absolutex()
+        var rely = (rel.y-screenHeight/2)-hoverfocus.absolutey()
+        hoverfocus.click(relx,rely)
+      }
+      hoverfocus.resethover()
+      hoverfocus = null
+    }
+
     var swipedir = swipeend(rel)
     if (target.swipe(swipedir)) {
       //console.log("yes, swipe in fact")
       target.resetpress()
     } else {
-      if (hoverfocus != null) hoverfocus.release(rel.x,rel.y)
-      target.unfocused_release(rel.x,rel.y)
+      target.release(rel.x,rel.y)
     }
     scene.resetPointerStealer()
   }
@@ -200,7 +194,9 @@
     //console.log("mouseout : "+e.clientX+","+e.clientY)
     if (touch) mouseup(e)
     if (hoverfocus != null) {
-      hoverfocus.hover(-999999,-999999)
+      hoverfocus.resethover()
+      hoverfocus = null
+      hoverlist = []
       return
     }
   }
@@ -216,38 +212,26 @@
     // find out which objects are hit
     var list = target.hoverTree(rel.x,rel.y)
     hoverlist = list
-    if (touch) {
-
-      if (list.length > 0) {
-        if (hoverfocus != list[0] && hoverfocus != null) hoverfocus.resetpress()
-        hoverfocus = list[0]
-        // send drag events to hit object
-        hoverfocus.drag(rel.x,rel.y)
-      } else {
-        if (hoverfocus != null) hoverfocus.resetpress()
-        hoverfocus = null
+    if (list.length > 0) {
+      if (hoverfocus != null && hoverfocus != list[0]) {
+        hoverfocus.resethover()
       }
-
-      swipedrag(rel)
-      target.unfocused_drag(rel.x,rel.y)
-    } else {
-      var list = target.hoverTree(rel.x,rel.y)
-
-      if (hoverfocus != null && list.length == 0) {
-        hoverfocus.hover(-999999,-999999)
-        hoverfocus = null
-        return
-      }
-      if (list.length == 0) return
-      if (hoverfocus != null && hoverfocus != list[0]) hoverfocus.hover(-99999,-999999)
-
       hoverfocus = list[0]
       var relx = (rel.x-screenWidth/2)-hoverfocus.absolutex()
       var rely = (rel.y-screenHeight/2)-hoverfocus.absolutey()
+      // send drag events to hit object
       hoverfocus.hover(relx,rely)
-      //console.log("hover",hoverfocus.identifier)
+    } else {
+      if (hoverfocus != null) hoverfocus.resethover()
+      hoverfocus = null
     }
-  }
+
+    if (touch) {
+      swipedrag(rel)
+      target.drag(rel.x,rel.y)
+    }
+    
+  }  
 
   function touchstart(e) {
     allowDefaultPointerEvent = false
@@ -279,6 +263,17 @@
     var target = scene.getPointerUser()
     if (target == null) return
     var rel = {x: (lasttouch.touches[0].pageX*scaleMulti-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (lasttouch.touches[0].pageY*scaleMulti-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+
+    if (hoverfocus != null) {
+      if (hoverfocus.click != null) {
+        var relx = (rel.x-screenWidth/2)-hoverfocus.absolutex()
+        var rely = (rel.y-screenHeight/2)-hoverfocus.absolutey()
+        hoverfocus.click(relx,rely)
+      }
+      hoverfocus.resethover()
+      hoverfocus = null
+    }
+
     var swipedir = swipeend(rel)
     if (target.swipe(swipedir)) {
       target:resetpress()
@@ -296,6 +291,19 @@
     if (target == null) return
     if (touch) {
       var rel = {x: (e.touches[0].pageX*scaleMulti-tgt.left-window.pageXOffset-layoutOffset.x)*layoutScale.x, y: (e.touches[0].pageY*scaleMulti-tgt.top-window.pageYOffset-layoutOffset.y)*layoutScale.y}
+
+      var list = target.hoverTree(rel.x,rel.y)
+      hoverlist = list
+      if (list.length > 0) {
+        if (hoverfocus != null && hoverfocus != list[0]) {
+          hoverfocus.resethover()
+        }
+        hoverfocus = list[0]
+      } else {
+        if (hoverfocus != null) hoverfocus.resethover()
+        hoverfocus = null        
+      }
+
       swipedrag(rel)
       target.drag(rel.x,rel.y)
     }
@@ -421,7 +429,7 @@
     curlify.localVars.screenWidth = screenWidth
     curlify.localVars.screenHeight = screenHeight
 
-    console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" "+screenWidth+"x"+screenHeight+" "+layoutWidth+"x"+layoutHeight+" "+glcanvas.width+","+glcanvas.height+" "+viewWidth+"x"+viewHeight)
+    console.log("resizeCanvas"+" "+glcanvas.clientWidth+"x"+glcanvas.clientHeight+" "+screenWidth+"x"+screenHeight+" "+layoutWidth+"x"+layoutHeight+" "+glcanvas.width+","+glcanvas.height+" "+viewWidth+"x"+viewHeight+" "+layoutOffset.x+","+layoutOffset.y)
 
     curlify.renderRequired = true
     scene.layoutChanged()
@@ -472,9 +480,21 @@
     }
   }
 
-  function createCORSRequest(method, url, params) {
+  function createCORSRequest(params) {
+
+    var method = params.method || "GET"
+    var url = params.url
+
     return new Promise(function(resolve, reject) {
       var xhr = new XMLHttpRequest();
+
+      // normal browsers set options here
+      try {
+        for (var opt in params.xhroptions) {
+          xhr[opt] = params.xhroptions[opt]
+        }
+      } catch (e) {
+      }
 
       if ("withCredentials" in xhr) {
 
@@ -497,12 +517,24 @@
         return
       }
 
+      // ie browsers set options here - sigh
+      try {
+        for (var opt in params.xhroptions) {
+          xhr[opt] = params.xhroptions[opt]
+        }
+      } catch (e) {
+      }
+
+
       xhr.onload = function() {
         // This is called even on 404 etc
         // so check the status
         if (xhr.status == 200) {
           // Resolve the promise with the response text
-          resolve(xhr.response);
+          if (params.returnfullrequest)
+            resolve(xhr);
+          else
+            resolve(xhr.response);
         } else {
           // Otherwise reject with the status text
           // which will hopefully be a meaningful error
@@ -515,10 +547,12 @@
         reject(Error("cors request failed with 'Network Error'"));
       };  
 
-      if (params != null && params instanceof FormData == false) {
-        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      for (var key in params.headers) {
+        //console.log("header: ",key,params.headers[key])
+        xhr.setRequestHeader(key, params.headers[key])
       }
-      xhr.send(params)      
+
+      xhr.send(params.postData)      
     })
   }
 
@@ -660,21 +694,25 @@
             document.head.appendChild(element);
             appendedElements.push(scriptid)
 
-            if (script.slice(-3) == ".js") {
-              createCORSRequest('GET', script)
-                .then( function(response)
-                {
-                  try {
-                    element.scriptobject = eval(response)
-                  } catch (e) {
-                    reject(Error("require eval failed for '"+script+"' with '"+e+"'",response))
+            if (script.slice(-3) == ".js" || script.slice(-5) == ".json") {
+              createCORSRequest( {
+                method: 'GET',
+                url: script 
+                }).then(
+                  function(response)
+                  {
+                    try {
+                      element.scriptobject = eval(response)
+                    } catch (e) {
+                      reject(Error("require eval failed for '"+script+"' with '"+e+"'",response))
+                      return
+                    }
+                    resolve(element.scriptobject)
+                  }, function(error) {
+                    reject(Error("require load failed for '"+script+"' with '"+error+"'"))
                     return
                   }
-                  resolve(element.scriptobject)
-                }, function(error) {
-                  reject(Error("require load failed for '"+script+"' with '"+error+"'"))
-                  return
-                })
+                )
             } else {
               element.setAttribute('src',script)
               element.onload = function() {
@@ -886,6 +924,9 @@
 
     camera = createProjectionAndView(screenWidth,screenHeight,3,100);
     curlify.localVars.camera = camera
+
+    curlify.require = require
+    curlify.createCORSRequest = createCORSRequest
 
     if (window.DeviceMotionEvent) {
       window.addEventListener('devicemotion', deviceMotionHandler, false)

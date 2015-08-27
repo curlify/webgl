@@ -96,6 +96,7 @@
      that group and is appended to the unpacked indices array.
      */
     var verts = [], vertNormals = [], textures = [], unpacked = {};
+
     // unpacking stuff
     unpacked.verts = [];
     unpacked.norms = [];
@@ -215,6 +216,7 @@
     this.vertexNormals = unpacked.norms;
     this.textures = unpacked.textures;
     this.indices = unpacked.indices;
+
   }
 
   var Ajax = function(){

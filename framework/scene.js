@@ -79,10 +79,22 @@
         }
 
         if (curlify.renderRequired || glflushtime > 0 ) {
-          gl.viewport(offset_x,offset_y,width,height)
+          // cannot use gl.viewport since IE does not implement this correctly
+          //gl.viewport(offset_x,offset_y,width,height)
+
+          var layoutAspect = width/height
+          var bufferAspect = gl.drawingBufferWidth/gl.drawingBufferHeight
+          var scalex = bufferAspect > layoutAspect ? 1 : width/gl.drawingBufferWidth
+          var scaley = bufferAspect > layoutAspect ? height/gl.drawingBufferHeight : 1          
+          gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight)
+
           gl.clearColor(0.0, 0.0, 0.0, 0.0);
           gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+
           for (var i=0;i<drawstack.length;i++) {
+
+            drawstack[i].scale.x = scalex
+            drawstack[i].scale.y = scaley
             drawstack[i].drawTree()
           }
           if (curlify.renderRequired) glflushtime = 500

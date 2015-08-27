@@ -43,7 +43,7 @@
 
         focusable.relativeRelease = function(x,y) {
           if (this.focused != true) return false
-          if (this.click != null) this.click(x,y)
+          //if (this.click != null) this.click(x,y)
           if (this.defocus != null) this.defocus(x,y)
           this.focused = false
           return true
@@ -52,17 +52,22 @@
         focusable.hover = function(x,y) {
           var used = false
           if (this.hit(x,y)) {
-            if (this.hovered == false && this.focus != null) this.focus(x,y)
+            if (this.hovered == false && this.hover_focus != null) this.hover_focus(x,y)
             this.hovered = true
             used = true
           } else {
-            if (this.hovered && this.defocus != null) {
-              this.defocus(x,y)
+            if (this.hovered && this.hover_defocus != null) {
+              this.hover_defocus(x,y)
               used = true
             }
             this.hovered = false
           }
           return used
+        }
+
+        focusable.resethover = function() {
+          if (this.hovered && this.hover_defocus != null) this.hover_defocus()
+          this.hovered = false
         }
 
         focusable.pointerReset = function() {
